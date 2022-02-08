@@ -1,5 +1,7 @@
 import io.deepn.script.DeepScriptEnvironment
+import io.deepn.script.variables.Null
 import io.deepn.script.variables.Variable
+import io.deepn.script.variables.memory.MemoryAddressVariable
 
 private fun compare(a: Any?, b: Any?): Boolean {
     if ((a is Int || b is Int) && (a is Long || b is Long)) {
@@ -10,6 +12,8 @@ private fun compare(a: Any?, b: Any?): Boolean {
     if(a != null && b != null && a::class == Any::class && b::class == Any::class) {
         return true
     }
+
+    if(a is MemoryAddressVariable && b is Null || a is Null && b is MemoryAddressVariable) return true
 
     return a == b
 }
