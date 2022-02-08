@@ -1,6 +1,7 @@
 package io.deepn.script
 
 import io.deepn.script.error.NameError
+import io.deepn.script.error.StackTrace
 import io.deepn.script.error.SyntaxError
 import io.deepn.script.error.TypeError
 import io.deepn.script.generated.DeepScriptBaseVisitor
@@ -18,13 +19,16 @@ import org.antlr.v4.runtime.tree.RuleNode
 import org.apache.commons.text.StringEscapeUtils
 
 
-class Visitor(initialContext: ParserRuleContext, private val scope: Scope) : DeepScriptBaseVisitor<Variable<*>>() {
+class Visitor(
+    initialContext: ParserRuleContext,
+    private val scope: Scope,
+    private val stackTrace: StackTrace
+) : DeepScriptBaseVisitor<Variable<*>>() {
 
     var currentContext: ParserRuleContext = initialContext
 
     private fun variableCalls(
-        baseVariable: Variable<*>,
-        argumentsContext: List<DeepScriptParser.ArgsContext>
+        baseVariable: Variable<*>, argumentsContext: List<DeepScriptParser.ArgsContext>
     ): List<Variable<*>> {
         val variables = ArrayList<Variable<*>>()
 
@@ -44,8 +48,7 @@ class Visitor(initialContext: ParserRuleContext, private val scope: Scope) : Dee
     }
 
     private fun resolveVariables(
-        baseVariable: Variable<*>,
-        variableSuffix: List<DeepScriptParser.VarSuffixContext>
+        baseVariable: Variable<*>, variableSuffix: List<DeepScriptParser.VarSuffixContext>
     ): List<Variable<*>> {
 
         val variables = ArrayList<Variable<*>>()
@@ -58,17 +61,14 @@ class Visitor(initialContext: ParserRuleContext, private val scope: Scope) : Dee
 
             currentVariable = (variables.lastOrNull() ?: currentVariable).detach()
 
-            val index = if (suffix.NAME() != null)
-                StringVariable(suffix.NAME().text)
-            else
-                visit(suffix.expression())
+            val index = if (suffix.NAME() != null) StringVariable(suffix.NAME().text)
+            else visit(suffix.expression())
 
             val isFunctionCall = suffix.NAME() != null
 
-            val nextValue = if (isFunctionCall && currentVariable !is LibraryVariable)
-                currentVariable.getExtensionFunction(index as StringVariable)
-            else
-                currentVariable.getIndex(index)
+            val nextValue =
+                if (isFunctionCall && currentVariable !is LibraryVariable) currentVariable.getExtensionFunction(index as StringVariable)
+                else currentVariable.getIndex(index)
 
             variables.add(IndexedVariable(currentVariable, nextValue, index))
 
@@ -83,17 +83,12 @@ class Visitor(initialContext: ParserRuleContext, private val scope: Scope) : Dee
     }
 
     private fun resolveBaseVariable(
-        name: String?,
-        expression: DeepScriptParser.ExpressionContext?,
-        returnMemoryAddress: Boolean
+        name: String?, expression: DeepScriptParser.ExpressionContext?, returnMemoryAddress: Boolean
     ): Variable<*> {
-        val baseVariable = if (name != null)
-            scope.resolve(name, returnMemoryAddress)
-        else
-            visit(expression)
+        val baseVariable = if (name != null) scope.resolve(name, returnMemoryAddress)
+        else visit(expression)
 
-        if (!returnMemoryAddress && name != null && baseVariable is Void)
-            throw NameError("name '${name}' is not defined")
+        if (!returnMemoryAddress && name != null && baseVariable is Void) throw NameError("name '${name}' is not defined")
 
         return baseVariable
     }
@@ -106,8 +101,7 @@ class Visitor(initialContext: ParserRuleContext, private val scope: Scope) : Dee
             else visit(it.expression())
         }
 
-        if (context.returnStatement() != null)
-            return visitReturnStatement(context.returnStatement())
+        if (context.returnStatement() != null) return visitReturnStatement(context.returnStatement())
 
         return returnVariable
     }
@@ -115,15 +109,13 @@ class Visitor(initialContext: ParserRuleContext, private val scope: Scope) : Dee
     override fun visitReturnStatement(context: DeepScriptParser.ReturnStatementContext): Variable<*> {
         val returnedValue: ListVariable = visitExpressionList(context.expressionList())
 
-        if (returnedValue.value.size == 1)
-            return returnedValue.value[0]
+        if (returnedValue.value.size == 1) return returnedValue.value[0]
 
         return returnedValue
     }
 
     override fun shouldVisitNextChild(node: RuleNode?, result: Variable<*>?): Boolean {
-        if (node?.parent is ParserRuleContext)
-            currentContext = node.parent as ParserRuleContext
+        if (node?.parent is ParserRuleContext) currentContext = node.parent as ParserRuleContext
 
         return true
     }
@@ -245,7 +237,7 @@ class Visitor(initialContext: ParserRuleContext, private val scope: Scope) : Dee
 
         val isStatic = context.staticVariable() != null
 
-        if(isStatic && (context.var_().NAME() == null || context.var_().varSuffix().isNotEmpty())) {
+        if (isStatic && (context.var_().NAME() == null || context.var_().varSuffix().isNotEmpty())) {
             throw NameError("static variable can only be assigned to global scope")
         }
 
@@ -276,20 +268,16 @@ class Visitor(initialContext: ParserRuleContext, private val scope: Scope) : Dee
             else -> Null
         }
 
-        if (lastValue is IndexedVariable)
-            lastValue.replace(newValue)
-        else
-            scope.assign(context.var_().NAME().text, newValue)
+        if (lastValue is IndexedVariable) lastValue.replace(newValue)
+        else scope.assign(context.var_().NAME().text, newValue)
 
         return Void
     }
 
     override fun visitPrefixexp(context: DeepScriptParser.PrefixexpContext): Variable<*> {
         val baseVariable = visitVarOrExp(context.varOrExp())
-        return if (context.args().isEmpty())
-            baseVariable
-        else
-            variableCalls(baseVariable, context.args()).lastOrNull() ?: baseVariable
+        return if (context.args().isEmpty()) baseVariable
+        else variableCalls(baseVariable, context.args()).lastOrNull() ?: baseVariable
     }
 
     override fun visitVarOrExp(context: DeepScriptParser.VarOrExpContext): Variable<*> {
@@ -299,10 +287,8 @@ class Visitor(initialContext: ParserRuleContext, private val scope: Scope) : Dee
     override fun visitVar_(context: DeepScriptParser.Var_Context): Variable<*> {
         val baseVariable = resolveBaseVariable(context.NAME()?.text, context.expression(), false)
 
-        return if (context.varSuffix().isEmpty())
-            baseVariable
-        else
-            resolveVariables(baseVariable, context.varSuffix()).last().detach()
+        return if (context.varSuffix().isEmpty()) baseVariable
+        else resolveVariables(baseVariable, context.varSuffix()).last().detach()
     }
 
     override fun visitExpressionList(context: DeepScriptParser.ExpressionListContext?): ListVariable {
@@ -310,15 +296,13 @@ class Visitor(initialContext: ParserRuleContext, private val scope: Scope) : Dee
     }
 
     override fun visitWhileLoop(context: DeepScriptParser.WhileLoopContext): Variable<*> {
-        while (visit(context.expression()).toBoolean().value)
-            visitBlock(context.block())
+        while (visit(context.expression()).toBoolean().value) visitBlock(context.block())
         return Void
     }
 
     override fun visitRepeatLoop(context: DeepScriptParser.RepeatLoopContext): Variable<*> {
         while (true) {
-            if (!visit(context.expression()).toBoolean().value)
-                visitBlock(context.block())
+            if (!visit(context.expression()).toBoolean().value) visitBlock(context.block())
             else break
         }
         return Void
@@ -332,12 +316,9 @@ class Visitor(initialContext: ParserRuleContext, private val scope: Scope) : Dee
         val limitValue = visit(context.expression(1))
         val stepValue = if (context.expression().size > 2) visit(context.expression(2)) else IntegerVariable(1)
 
-        if (!initialValue.isNumber())
-            throw TypeError("'for' initial value must be a number")
-        if (!limitValue.isNumber())
-            throw TypeError("'for' limit must be a number")
-        if (!stepValue.isNumber())
-            throw TypeError("'for' step must be a number")
+        if (!initialValue.isNumber()) throw TypeError("'for' initial value must be a number")
+        if (!limitValue.isNumber()) throw TypeError("'for' limit must be a number")
+        if (!stepValue.isNumber()) throw TypeError("'for' step must be a number")
 
         if (stepValue.isZero() || limitValue.eq(initialValue).value) return Null
         if (limitValue.gt(initialValue).value && stepValue.isNegative()) return Null
@@ -379,8 +360,7 @@ class Visitor(initialContext: ParserRuleContext, private val scope: Scope) : Dee
         executeCondition(context.expression(), context.block())
         context.elseifCondition()?.forEach { executeCondition(it.expression(), it.block()) }
 
-        if (!conditionExecuted && context.elseCondition() != null)
-            visitBlock(context.elseCondition().block())
+        if (!conditionExecuted && context.elseCondition() != null) visitBlock(context.elseCondition().block())
 
         return Void
     }
@@ -390,8 +370,7 @@ class Visitor(initialContext: ParserRuleContext, private val scope: Scope) : Dee
 
         context.funcbody().nameList()?.functionNameField()?.forEach { nameField ->
             val key = nameField.NAME().text
-            if (parameters.contains(key))
-                throw SyntaxError("duplicate argument '${key}' in function definition")
+            if (parameters.contains(key)) throw SyntaxError("duplicate argument '${key}' in function definition")
             parameters[nameField.NAME().text] = (nameField.expression() != null).toProducer {
                 visit(nameField.expression())
             }
@@ -401,7 +380,8 @@ class Visitor(initialContext: ParserRuleContext, private val scope: Scope) : Dee
                 context.NAME().text,
                 scope,
                 parameters,
-                context.funcbody().block()
+                context.funcbody().block(),
+                stackTrace
             )
         )
         return Void
@@ -416,10 +396,9 @@ class Visitor(initialContext: ParserRuleContext, private val scope: Scope) : Dee
         val json = ObjectVariable()
         context.jsonPair().forEach {
             val pairValue = visit(it)
-            if (pairValue != Void)
-                pairValue.name?.let { key ->
-                    json.setIndex(StringVariable(key), pairValue)
-                }
+            if (pairValue != Void) pairValue.name?.let { key ->
+                json.setIndex(StringVariable(key), pairValue)
+            }
         }
         return json
     }
@@ -428,12 +407,9 @@ class Visitor(initialContext: ParserRuleContext, private val scope: Scope) : Dee
         if (context.expression() == null) return Void
 
 
-        val name: Variable<*> = if (context.string() != null)
-            visit(context.string())
-        else if (context.NAME() != null)
-            StringVariable(context.NAME().text)
-        else
-            visit(context.expression().first())
+        val name: Variable<*> = if (context.string() != null) visit(context.string())
+        else if (context.NAME() != null) StringVariable(context.NAME().text)
+        else visit(context.expression().first())
 
         val value = visit(context.expression().last())
 
@@ -449,8 +425,7 @@ class Visitor(initialContext: ParserRuleContext, private val scope: Scope) : Dee
             val parent = variables[variables.size - 2].detach()
             val index = variables[variables.size - 1]
 
-            if (index is IndexedVariable)
-                parent.deleteIndex(index.index)
+            if (index is IndexedVariable) parent.deleteIndex(index.index)
         }
 
         return Void
@@ -461,15 +436,15 @@ class Visitor(initialContext: ParserRuleContext, private val scope: Scope) : Dee
 
         context.NAME()?.forEach { nameField ->
             val key = nameField.text
-            if (parameters.contains(key))
-                throw SyntaxError("duplicate argument '${key}' in function definition")
+            if (parameters.contains(key)) throw SyntaxError("duplicate argument '${key}' in function definition")
             parameters[key] = null
         }
         return LocalFunctionVariable(
             "lambda",
             scope,
             parameters,
-            context.expression()
+            context.expression(),
+            stackTrace
         )
     }
 

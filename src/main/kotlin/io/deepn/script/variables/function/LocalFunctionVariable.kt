@@ -1,6 +1,7 @@
 package io.deepn.script.variables.function
 
 import io.deepn.script.Visitor
+import io.deepn.script.error.StackTrace
 import io.deepn.script.error.SyntaxError
 import io.deepn.script.error.TypeError
 import io.deepn.script.generated.DeepScriptParser
@@ -8,6 +9,7 @@ import io.deepn.script.scope.Scope
 import io.deepn.script.variables.FunctionArguments
 import io.deepn.script.variables.FunctionParameters
 import io.deepn.script.variables.Variable
+import jdk.jfr.consumer.RecordedStackTrace
 import org.antlr.v4.runtime.ParserRuleContext
 
 
@@ -55,7 +57,8 @@ class LocalFunctionVariable(
     val functionName: String,
     private val parentScope: Scope,
     private val parameters: FunctionParameters,
-    private val block: ParserRuleContext
+    private val block: ParserRuleContext,
+    private val stackTrace: StackTrace,
 ) : Variable<Any>(Any()) {
 
     init {
@@ -82,10 +85,15 @@ class LocalFunctionVariable(
         parameters.filter { (key, _) -> !toInject.containsKey(key) }.let { missingArguments ->
             if (missingArguments.isNotEmpty())
                 throw TypeError("${this.functionName}() missing ${missingArguments.size} required positional argument(s):" +
-                        " ${missingArguments.keys.joinToString { "'${it}'" }}")
+                        " ${missingArguments.keys.joinToString { "'${it}'" }}"
+                )
         }
 
-        return Visitor(block, Scope(parentScope, toInject)).visit(block)
+        val newVisitor = Visitor(block, Scope(parentScope, toInject), stackTrace)
+        stackTrace.stack(newVisitor)
+        val result = newVisitor.visit(block)
+        stackTrace.pop()
+        return result
     }
 
     override fun valueToString(): String {

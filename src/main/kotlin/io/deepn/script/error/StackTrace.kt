@@ -4,7 +4,10 @@ import io.deepn.script.Visitor
 
 class StackTrace {
 
-    private val traces: MutableList<Visitor> = ArrayList()
+    val traces: ArrayDeque<Visitor> = ArrayDeque()
 
+    fun stack(visitor: Visitor) = traces.addFirst(visitor)
+
+    fun pop() = traces.removeFirst()
 
 }

@@ -11,6 +11,7 @@ import io.deepn.script.utils.implementFunctions
 import io.deepn.script.variables.Variable
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
+import org.antlr.v4.runtime.ParserRuleContext
 import kotlin.system.measureTimeMillis
 
 data class DeepScriptCompilationResult(
@@ -54,7 +55,8 @@ class DeepScriptEnvironment(
 
     fun execute(): DeepScriptExecutionResult {
         context?.let { context ->
-            val visitor = Visitor(context, scope)
+            val visitor = Visitor(context, scope, stackTrace)
+            stackTrace.stack(visitor)
             var returnedVariable: Variable<*>? = null
             var error: DeepScriptError? = null
 
@@ -71,13 +73,16 @@ class DeepScriptEnvironment(
             }
 
             val compilationException = error?.let { deepScriptError ->
-                val lastContext = visitor.currentContext
                 DeepScriptExecutionError(
                     deepScriptError.javaClass.simpleName,
                     deepScriptError.message ?: "",
-                    lastContext.start.toScriptToken(),
-                    lastContext.stop.toScriptToken(),
-                    lastContext.text,
+                    stackTrace.traces.map {
+                        ErrorLine(
+                            it.currentContext.start.toScriptToken(),
+                            it.currentContext.stop.toScriptToken(),
+                            source.split("\n")[it.currentContext.start.line - 1].trim(),
+                        )
+                    }
                 )
             }
 

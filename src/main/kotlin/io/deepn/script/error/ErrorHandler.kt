@@ -27,6 +27,10 @@ data class GrammarSyntaxError(
 data class DeepScriptExecutionError(
     val type: String,
     val message: String,
+    val lines: List<ErrorLine>
+)
+
+data class ErrorLine(
     val start: ScriptToken,
     val end: ScriptToken,
     val highlight: String,

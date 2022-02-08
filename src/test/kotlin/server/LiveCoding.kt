@@ -62,11 +62,12 @@ fun main() {
                     .append("\n")
                 if (executionResult.success.not()) {
                     resultBuilder.append(IntRange(0, 5).joinToString(" ") { "" })
-                    resultBuilder.append("${executionResult.error?.start?.line}:${executionResult.error?.start?.charPositionInLine} to ")
-                    resultBuilder.append("${executionResult.error?.end?.line}:${executionResult.error?.end?.charPositionInLine}: ")
-                    resultBuilder.append("[${executionResult.error?.highlight}] ")
-                        .append(executionResult.error?.type).append(" -> ").append(executionResult.error?.message)
+                        .append(executionResult.error?.type).append(" -> ").append(executionResult.error?.message).append(":")
                         .append("\n")
+
+                    executionResult.error?.lines?.forEach {line ->
+                        resultBuilder.append("\t").append("line ${line.start.line}: ${line.highlight}").append("\n")
+                    }
                 }
                 resultBuilder.append(IntRange(0, 5).joinToString(" ") { "" })
                 resultBuilder.append("Result : ").append(executionResult.result?.valueToString() ?: "none").append("\n")

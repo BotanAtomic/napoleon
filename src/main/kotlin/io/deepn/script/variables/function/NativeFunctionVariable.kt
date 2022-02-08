@@ -39,21 +39,19 @@ private fun NativeFunctionVariable.checkArguments(
     val functionName = this.value.name
     var hasKeywordArgument = false
     arguments.forEach { (key, _) ->
-        if (key == null && hasKeywordArgument)
-            throw SyntaxError("positional argument follows keyword argument")
+        if (key == null && hasKeywordArgument) throw SyntaxError("positional argument follows keyword argument")
         hasKeywordArgument = key != null
     }
 
-    if (parameters.size < arguments.size && !this.hasVarargs)
-        throw TypeError("$functionName() take ${parameters.size} argument(s) but ${arguments.size} were given")
+    if (parameters.size < arguments.size && !this.hasVarargs) throw TypeError("$functionName() take ${parameters.size} argument(s) but ${arguments.size} were given")
 
     arguments.filter { it.first != null }.forEach { (key, _) ->
-        if (parameters.firstOrNull { it.name == key } == null)
-            throw TypeError("$functionName() got an unexpected keyword argument '$key'")
+        if (parameters.firstOrNull { it.name == key } == null) throw TypeError("$functionName() got an unexpected keyword argument '$key'")
     }
 
-    if (arguments.filter { it.first != null }.groupingBy { it.first }.eachCount().any { it.value > 1 })
-        throw SyntaxError("keyword argument repeated")
+    if (arguments.filter { it.first != null }.groupingBy { it.first }.eachCount()
+            .any { it.value > 1 }
+    ) throw SyntaxError("keyword argument repeated")
 }
 
 class NativeFunctionVariable(
@@ -69,7 +67,6 @@ class NativeFunctionVariable(
     override fun call(arguments: FunctionArguments): Variable<*> {
         val function = value.function
         val functionName = value.name
-
 
 
         val parameters = function.valueParameters
@@ -95,46 +92,36 @@ class NativeFunctionVariable(
                 val variable: Any? = if (!it.isVararg) {
                     arguments.findByName(it.name) ?: arguments.findByIndex(it.index - indexOffset)
                 } else {
-                    val varargVariables = arguments
-                        .takeWhile { (first, _) -> first == null }
-                        .map { (_, second) -> second }
-                        .toTypedArray()
+                    val varargVariables =
+                        arguments.takeWhile { (first, _) -> first == null }.map { (_, second) -> second }.toTypedArray()
 
                     indexOffset -= varargVariables.size
                     varargVariables
                 }
-                if (variable != null)
-                    toInject[it] = variable
+                if (variable != null) toInject[it] = variable
             }
         }
-//        println("---- ${functionName}() ----")
-//        toInject.forEach { (key, value) ->
-//            println("${key.name} -> $value")
-//        }
-//        println("----${IntRange(0, functionName.length + 3).joinToString("") { "-" }}----")
+
         parameters.filter { !toInject.containsKey(it) && !it.isOptional }.let { missingArguments ->
-            if (missingArguments.isNotEmpty())
-                throw TypeError("$functionName() missing ${missingArguments.size} required positional argument(s):" +
-                        " ${missingArguments.joinToString { "'${it.name}'" }}")
+            if (missingArguments.isNotEmpty()) throw TypeError(
+                "$functionName() missing ${missingArguments.size} required positional argument(s):" + " ${missingArguments.joinToString { "'${it.name}'" }}"
+            )
         }
 
         toInject.forEach { (parameter, value) ->
             if (parameter.type.classifier is KClass<*>) {
-                if (!(parameter.type.classifier as KClass<*>).isInstance(value) && value is Variable<*>)
-                    throw ArgumentTypeError(
-                        "$functionName() parameter '${parameter.name}' required '${classToType(parameter.type.classifier)}' but got '${value.type()}'"
-                    )
+                if (!(parameter.type.classifier as KClass<*>).isInstance(value) && value is Variable<*>) throw ArgumentTypeError(
+                    "$functionName() parameter '${parameter.name}' required '${classToType(parameter.type.classifier)}' but got '${value.type()}'"
+                )
             }
         }
 
         val executionResult = kotlin.runCatching { function.callBy(toInject) }
         if (executionResult.isSuccess) {
             val result = executionResult.getOrNull()
-            if (result is ErrorVariable)
-                throw result.value
+            if (result is ErrorVariable) throw result.value
 
-            if (result is Variable<*>)
-                return result
+            if (result is Variable<*>) return result
         } else {
             executionResult.exceptionOrNull()?.printStackTrace()
             throw UnknownError("failed to execute ${functionName}()")
