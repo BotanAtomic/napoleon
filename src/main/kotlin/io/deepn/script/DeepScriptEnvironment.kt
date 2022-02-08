@@ -11,7 +11,6 @@ import io.deepn.script.utils.implementFunctions
 import io.deepn.script.variables.Variable
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
-import org.antlr.v4.runtime.ParserRuleContext
 import kotlin.system.measureTimeMillis
 
 data class DeepScriptCompilationResult(

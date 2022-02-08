@@ -10,6 +10,6 @@ class MemoryAddressVariable(private val onAssign: (Variable<*>, Any?) -> Unit) :
         onAssign(variable, parameter)
     }
 
-    override fun valueToString(): String = "memory ${hashCode()}"
+    override fun valueToString(): String = type()
 
 }

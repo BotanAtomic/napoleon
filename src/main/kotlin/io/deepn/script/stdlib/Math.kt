@@ -6,11 +6,14 @@ import io.deepn.script.variables.error.ErrorVariable
 import io.deepn.script.variables.primitive.FloatVariable
 import io.deepn.script.variables.primitive.IntegerVariable
 import io.deepn.script.variables.primitive.api.NumberVariable
+import kotlin.math.PI
 import kotlin.random.Random.Default.nextDouble
 import kotlin.random.Random.Default.nextLong
 
 @Package("math")
 object Math {
+
+    fun pi() = FloatVariable(PI)
 
     fun sin(x: NumberVariable): Variable<*> = FloatVariable(kotlin.math.sin(x.toDouble()))
 
@@ -88,7 +91,7 @@ object Math {
     fun random(
         from: NumberVariable = IntegerVariable(0),
         to: NumberVariable = IntegerVariable(1)
-    ) : Variable<*> {
+    ): Variable<*> {
         if (to.toDouble() <= from.toDouble()) return ErrorVariable(ValueError("bound must be greater than origin"))
         return FloatVariable(nextDouble(from.toDouble(), to.toDouble()))
     }
