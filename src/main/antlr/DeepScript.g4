@@ -5,7 +5,7 @@ chunk
     ;
 
 block
-    : statementGroup? NEWLINE* returnStatement? NEWLINE*
+    : statementGroup? NEWLINE*
     ;
 
 statementGroup:
@@ -154,7 +154,7 @@ args
     ;
 
 funcbody
-    : '(' nameList? ')' NEWLINE* block 'end'
+    : '(' nameList? ')' NEWLINE* block returnStatement? NEWLINE* 'end'
     ;
 
 tableconstructor

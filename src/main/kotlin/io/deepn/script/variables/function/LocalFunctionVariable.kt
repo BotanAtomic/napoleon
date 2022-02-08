@@ -4,12 +4,12 @@ import io.deepn.script.Visitor
 import io.deepn.script.error.StackTrace
 import io.deepn.script.error.SyntaxError
 import io.deepn.script.error.TypeError
-import io.deepn.script.generated.DeepScriptParser
+import io.deepn.script.generated.DeepScriptParser.ReturnStatementContext
 import io.deepn.script.scope.Scope
 import io.deepn.script.variables.FunctionArguments
 import io.deepn.script.variables.FunctionParameters
 import io.deepn.script.variables.Variable
-import jdk.jfr.consumer.RecordedStackTrace
+import io.deepn.script.variables.Void
 import org.antlr.v4.runtime.ParserRuleContext
 
 
@@ -58,6 +58,7 @@ class LocalFunctionVariable(
     private val parentScope: Scope,
     private val parameters: FunctionParameters,
     private val block: ParserRuleContext,
+    private val returnStatement: ReturnStatementContext?,
     private val stackTrace: StackTrace,
 ) : Variable<Any>(Any()) {
 
@@ -84,14 +85,16 @@ class LocalFunctionVariable(
 
         parameters.filter { (key, _) -> !toInject.containsKey(key) }.let { missingArguments ->
             if (missingArguments.isNotEmpty())
-                throw TypeError("${this.functionName}() missing ${missingArguments.size} required positional argument(s):" +
-                        " ${missingArguments.keys.joinToString { "'${it}'" }}"
+                throw TypeError(
+                    "${this.functionName}() missing ${missingArguments.size} required positional argument(s):" +
+                            " ${missingArguments.keys.joinToString { "'${it}'" }}"
                 )
         }
 
         val newVisitor = Visitor(block, Scope(parentScope, toInject), stackTrace)
         stackTrace.stack(newVisitor)
-        val result = newVisitor.visit(block)
+        newVisitor.visit(block)
+        val result = returnStatement?.let { newVisitor.visitReturnStatement(it) } ?: Void
         stackTrace.pop()
         return result
     }

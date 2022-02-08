@@ -12,7 +12,7 @@ class LoopTest {
                 b = i + 1
                 i = b
             end
-            return i
+            i
         """.trimIndent(), 100)
 
         scriptAssert("""

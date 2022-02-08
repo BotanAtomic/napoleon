@@ -4,6 +4,11 @@ import NumberTest
 import com.sun.net.httpserver.HttpServer
 import io.deepn.script.DeepScriptEnvironment
 import io.deepn.script.logger.Logger
+import io.deepn.script.scope.Scope
+import io.deepn.script.stdlib.Json.stringify
+import io.deepn.script.variables.function.LibraryVariable
+import io.deepn.script.variables.function.NativeFunctionVariable
+import io.deepn.script.variables.primitive.ObjectVariable
 import java.io.File
 import java.net.InetSocketAddress
 
@@ -31,9 +36,10 @@ fun main() {
                 it.sendResponseHeaders(204, -1);
                 return@createContext;
             }
-
+            val scope = Scope()
             val interpreter = DeepScriptEnvironment(
                 String(it.requestBody.readAllBytes()),
+                scope,
                 logger = object : Logger {
                     override fun log(message: String) {
                         resultBuilder.append(message)
@@ -74,6 +80,18 @@ fun main() {
                 resultBuilder.append(IntRange(0, 20).joinToString(" ") { "#" }).append("\n\n")
 
 
+                resultBuilder.append("\n").append(IntRange(0, 20).joinToString(" ") { "#" }).append("\n")
+
+                scope.variables.forEach { (key, value) ->
+                    if(value !is LibraryVariable && value !is NativeFunctionVariable) {
+                        resultBuilder.append("\t")
+                        if(value is ObjectVariable)
+                            resultBuilder.append("$key -> ${value.stringify().value} (${value.type()})").append("\n")
+                        else
+                            resultBuilder.append("$key -> ${value.valueToString()} (${value.type()})").append("\n")
+                    }
+                }
+                resultBuilder.append(IntRange(0, 20).joinToString(" ") { "#" }).append("\n")
             }
 
             val finalResponse = resultBuilder.toString().toByteArray()

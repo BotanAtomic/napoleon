@@ -21,7 +21,7 @@ class Scope(private val parent: Scope? = null, initialVariables: HashMap<String,
     private val protectedVariables = HashSet<String>()
     private val staticVariables = HashSet<String>()
 
-    private val variables = HashMap<String, Variable<*>>().apply {
+    val variables = HashMap<String, Variable<*>>().apply {
         if (initialVariables != null)
             putAll(initialVariables)
     }
