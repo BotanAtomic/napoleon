@@ -51,6 +51,17 @@ class ListVariable(
         throw TypeError("list index must be integer, not '${position.type()}'")
     }
 
+    override fun deleteIndex(position: Variable<*>): Variable<*> {
+        if (position is IntegerVariable) {
+            val index = position.value.toInt()
+            if (index < 0 || index >= value.size)
+                throw IndexError("list assignment index out of range: index=${index}, size=${value.size}")
+
+            return value.removeAt(index)
+        }
+        throw TypeError("list index must be integer, not '${position.type()}'")
+    }
+
     override fun valueToString(): String {
         return value.joinToString(",", "[", "]") { it.valueToString() }
     }

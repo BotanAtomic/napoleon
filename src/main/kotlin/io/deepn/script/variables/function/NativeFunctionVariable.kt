@@ -8,8 +8,9 @@ import io.deepn.script.error.UnknownError
 import io.deepn.script.stdlib.Environment
 import io.deepn.script.stdlib.NativeFunction
 import io.deepn.script.variables.FunctionArguments
-import io.deepn.script.variables.Null
+import io.deepn.script.variables.Void
 import io.deepn.script.variables.Variable
+import io.deepn.script.variables.classToType
 import io.deepn.script.variables.error.ErrorVariable
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
@@ -18,7 +19,7 @@ import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.instanceParameter
 import kotlin.reflect.full.valueParameters
 
-fun FunctionArguments.findByName(name: String): Variable<*>? = this?.find { it.first == name }?.second
+fun FunctionArguments.findByName(name: String?): Variable<*>? = this?.find { it.first == name }?.second
 
 fun FunctionArguments.findByIndex(index: Int): Variable<*>? {
     if (index >= (this?.size ?: 0)) return null
@@ -69,24 +70,30 @@ class NativeFunctionVariable(
         val function = value.function
         val functionName = value.name
 
-        val toInject = HashMap<KParameter, Any?>()
-        function.instanceParameter?.let { toInject[it] = value.instance }
-        function.extensionReceiverParameter?.let { toInject[it] = source }
+
 
         val parameters = function.valueParameters
 
         checkArguments(arguments, parameters)
 
         var indexOffset = 0
-        function.instanceParameter?.let { indexOffset += 1 }
+
+        val toInject = HashMap<KParameter, Any?>()
+        function.instanceParameter?.let {
+            toInject[it] = value.instance
+            indexOffset += 1
+        }
+        function.extensionReceiverParameter?.let {
+            toInject[it] = source
+            indexOffset += 1
+        }
 
         parameters.find { it.hasAnnotation<Environment>() }?.let { toInject[it] = environment }
 
         if (arguments != null) {
-            function.valueParameters.filter { !it.hasAnnotation<Environment>() }.forEach {
-                val realIndex = it.index - indexOffset
-                if (!it.isVararg) {
-                    toInject[it] = arguments.findByName(it.name ?: "") ?: arguments.findByIndex(realIndex)
+            function.valueParameters.filter { it.annotations.isEmpty() }.forEach {
+                val variable: Any? = if (!it.isVararg) {
+                    arguments.findByName(it.name) ?: arguments.findByIndex(it.index - indexOffset)
                 } else {
                     val varargVariables = arguments
                         .takeWhile { (first, _) -> first == null }
@@ -94,17 +101,29 @@ class NativeFunctionVariable(
                         .toTypedArray()
 
                     indexOffset -= varargVariables.size
-                    toInject[it] = varargVariables
+                    varargVariables
                 }
-                if (it.isOptional && toInject[it] == null)
-                    toInject.remove(it)
+                if (variable != null)
+                    toInject[it] = variable
             }
+        }
+//        println("---- ${functionName}() ----")
+//        toInject.forEach { (key, value) ->
+//            println("${key.name} -> $value")
+//        }
+//        println("----${IntRange(0, functionName.length + 3).joinToString("") { "-" }}----")
+        parameters.filter { !toInject.containsKey(it) && !it.isOptional }.let { missingArguments ->
+            if (missingArguments.isNotEmpty())
+                throw TypeError("$functionName() missing ${missingArguments.size} required positional argument(s):" +
+                        " ${missingArguments.joinToString { "'${it.name}'" }}")
         }
 
         toInject.forEach { (parameter, value) ->
             if (parameter.type.classifier is KClass<*>) {
-                if (!(parameter.type.classifier as KClass<*>).isInstance(value))
-                    throw ArgumentTypeError("$functionName() parameter '${parameter.name}' required '${parameter}' ")
+                if (!(parameter.type.classifier as KClass<*>).isInstance(value) && value is Variable<*>)
+                    throw ArgumentTypeError(
+                        "$functionName() parameter '${parameter.name}' required '${classToType(parameter.type.classifier)}' but got '${value.type()}'"
+                    )
             }
         }
 
@@ -120,7 +139,7 @@ class NativeFunctionVariable(
             executionResult.exceptionOrNull()?.printStackTrace()
             throw UnknownError("failed to execute ${functionName}()")
         }
-        return Null
+        return Void
     }
 
     override fun valueToString(): String {

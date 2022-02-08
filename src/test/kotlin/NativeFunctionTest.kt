@@ -23,20 +23,20 @@ class NativeFunctionTest {
         """.trimIndent(), Any())
 
         scriptAssert("""
-            len({1,2,3})
+            len([1,2,3])
         """.trimIndent(), 3)
     }
 
     @Test
     fun `function extension`() {
         scriptAssert("""
-            list = {1,2,3}
+            list = [1,2,3]
             list.reverse()
         """.trimIndent(), LinkedList(listOf(3,2,1))
         )
 
         scriptAssert("""
-            list = {1,2,3}
+            list = [1,2,3]
             list.clear()
             return list
         """.trimIndent(), LinkedList<Any>()

@@ -2,8 +2,8 @@ package io.deepn.script.scope
 
 import io.deepn.script.error.FunctionCallError
 import io.deepn.script.error.NameError
-import io.deepn.script.variables.Null
 import io.deepn.script.variables.Variable
+import io.deepn.script.variables.Void
 import io.deepn.script.variables.function.NativeFunctionVariable
 import io.deepn.script.variables.memory.MemoryAddressVariable
 import io.deepn.script.variables.primitive.StringVariable
@@ -19,6 +19,7 @@ fun findFunctionExtension(variable: Variable<*>, index: StringVariable): Variabl
 class Scope(private val parent: Scope? = null, initialVariables: HashMap<String, Variable<*>>? = null) {
 
     private val protectedVariables = HashSet<String>()
+    private val staticVariables = HashSet<String>()
 
     private val variables = HashMap<String, Variable<*>>().apply {
         if (initialVariables != null)
@@ -26,7 +27,7 @@ class Scope(private val parent: Scope? = null, initialVariables: HashMap<String,
     }
 
     fun resolveOrCreate(key: String, toCreate: Variable<*>): Variable<*> {
-        if (resolve(key) == Null)
+        if (resolve(key) == Void)
             assign(key, toCreate)
 
         return resolve(key)
@@ -36,15 +37,19 @@ class Scope(private val parent: Scope? = null, initialVariables: HashMap<String,
         if (!variables.containsKey(key) && parent != null)
             return parent.resolve(key, returnMemoryAddress)
 
-        return variables[key] ?: if (returnMemoryAddress) MemoryAddressVariable {
-            assign(key, it)
-        } else Null
+        return variables[key] ?: if (returnMemoryAddress) MemoryAddressVariable { value, isStatic ->
+            assign(key, value, if (isStatic is Boolean) isStatic else false)
+        } else Void
     }
 
-    fun assign(key: String, variable: Variable<*>) {
+    fun assign(key: String, variable: Variable<*>, isStatic: Boolean = false) {
+        if (isStatic && staticVariables.contains(key)) throw NameError("name '$key' is already static")
         if (protectedVariables.contains(key)) throw NameError("name '$key' is protected")
 
         variables[key] = variable
+
+        if (isStatic)
+            staticVariables.add(key)
     }
 
     fun remove(key: String) {

@@ -45,7 +45,7 @@ class LocalFunctionTest {
 
         scriptAssert("""
             k = 4
-            z = {1,2,3}
+            z = [1,2,3]
             function test(a, b, c=4)
                 z[0] = -1
                 return ((a + b) // c) + k

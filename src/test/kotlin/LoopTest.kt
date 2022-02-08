@@ -41,6 +41,14 @@ class LoopTest {
     fun `for loop`() {
         scriptAssert("""
             a = 0
+            for i = 0, 11 do
+                a = i
+            end
+            a
+        """.trimIndent(), 11)
+
+        scriptAssert("""
+            a = 0
             for i = 0, 11, 1 do
                 a = i
             end
@@ -69,8 +77,8 @@ class LoopTest {
         """.trimIndent(), "o")
 
         scriptAssert("""
-            a = {"H", 1, 9, "P"}
-            b = {0,0,0,0}
+            a = ["H", 1, 9, "P"]
+            b = [0,0,0,0]
             j = 0
             for i in a do
                 b[j] = i

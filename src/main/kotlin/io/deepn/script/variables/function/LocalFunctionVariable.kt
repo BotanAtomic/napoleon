@@ -8,6 +8,7 @@ import io.deepn.script.scope.Scope
 import io.deepn.script.variables.FunctionArguments
 import io.deepn.script.variables.FunctionParameters
 import io.deepn.script.variables.Variable
+import org.antlr.v4.runtime.ParserRuleContext
 
 
 private fun checkParameters(parameters: FunctionParameters) {
@@ -54,7 +55,7 @@ class LocalFunctionVariable(
     val functionName: String,
     private val parentScope: Scope,
     private val parameters: FunctionParameters,
-    private val block: DeepScriptParser.BlockContext
+    private val block: ParserRuleContext
 ) : Variable<Any>(Any()) {
 
     init {
@@ -78,15 +79,13 @@ class LocalFunctionVariable(
                 toInject[key] = valueProvider()
         }
 
-        parameters.filter { (key, _) ->
-            !toInject.containsKey(key)
-        }.toList().let { missingArguments ->
+        parameters.filter { (key, _) -> !toInject.containsKey(key) }.let { missingArguments ->
             if (missingArguments.isNotEmpty())
                 throw TypeError("${this.functionName}() missing ${missingArguments.size} required positional argument(s):" +
-                        " ${missingArguments.joinToString { "'${it.first}'" }}")
+                        " ${missingArguments.keys.joinToString { "'${it}'" }}")
         }
 
-        return Visitor(Scope(parentScope, toInject)).visitBlock(block)
+        return Visitor(block, Scope(parentScope, toInject)).visit(block)
     }
 
     override fun valueToString(): String {

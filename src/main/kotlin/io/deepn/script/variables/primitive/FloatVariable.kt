@@ -8,15 +8,9 @@ import kotlin.math.pow
 
 class FloatVariable : Variable<Double>, NumberVariable {
 
-    constructor(initialValue: Long) : super(initialValue.toDouble())
-
-    constructor(initialValue: Int) : super(initialValue.toDouble())
-
     constructor(initialValue: String) : super(initialValue.toDouble())
 
     constructor(initialValue: Double) : super(initialValue)
-
-    constructor(initialValue: Float) : super(initialValue.toDouble())
 
     override fun type() = "float"
 
@@ -24,6 +18,7 @@ class FloatVariable : Variable<Double>, NumberVariable {
         return when (by) {
             is IntegerVariable -> FloatVariable(value + by.value)
             is FloatVariable -> FloatVariable(value + by.value)
+            is StringVariable -> StringVariable(valueToString() + by.value)
             else -> super.add(by)
         }
     }

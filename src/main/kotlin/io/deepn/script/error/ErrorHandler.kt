@@ -20,8 +20,16 @@ enum class SyntaxErrorEnum {
 }
 
 data class GrammarSyntaxError(
-    val start: ScriptToken,
+    val start: ScriptToken?,
     val type: SyntaxErrorEnum
+)
+
+data class DeepScriptExecutionError(
+    val type: String,
+    val message: String,
+    val start: ScriptToken,
+    val end: ScriptToken,
+    val highlight: String,
 )
 
 fun Token.toScriptToken() = ScriptToken(
@@ -43,11 +51,11 @@ class DeepScriptErrorHandler : BaseErrorListener() {
         exceptions.add(
             when {
                 e is LexerNoViableAltException || e is NoViableAltException -> GrammarSyntaxError(
-                    e.offendingToken.toScriptToken(),
+                    e.offendingToken?.toScriptToken(),
                     SyntaxErrorEnum.NO_ALTERNATIVE
                 )
                 e is InputMismatchException -> GrammarSyntaxError(
-                    e.offendingToken.toScriptToken(),
+                    e.offendingToken?.toScriptToken(),
                     SyntaxErrorEnum.INPUT_MISMATCH
                 )
                 offendingSymbol is CommonToken -> GrammarSyntaxError(

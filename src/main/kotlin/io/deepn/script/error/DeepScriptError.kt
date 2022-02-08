@@ -18,8 +18,6 @@ class ValueError(message : String) : DeepScriptError(message)
 
 class FunctionCallError(message : String) : DeepScriptError(message)
 
+class JsonError(message : String) : DeepScriptError(message)
+
 class UnknownError(message : String?) : DeepScriptError(message)
-
-
-
-

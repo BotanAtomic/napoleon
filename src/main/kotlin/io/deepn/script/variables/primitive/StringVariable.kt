@@ -6,6 +6,10 @@ class StringVariable(initialValue: String) : Variable<String>(initialValue) {
 
     override fun type() = "string"
 
+    override fun add(by: Variable<*>): Variable<*> {
+        return StringVariable(value + by.valueToString())
+    }
+
     override fun eq(variable: Variable<*>): BooleanVariable {
         if (variable is StringVariable)
             return BooleanVariable(value == variable.value)

@@ -7,10 +7,7 @@ import io.deepn.script.generated.DeepScriptBaseVisitor
 import io.deepn.script.generated.DeepScriptParser
 import io.deepn.script.scope.Scope
 import io.deepn.script.utils.*
-import io.deepn.script.variables.FunctionArguments
-import io.deepn.script.variables.FunctionParameters
-import io.deepn.script.variables.Null
-import io.deepn.script.variables.Variable
+import io.deepn.script.variables.*
 import io.deepn.script.variables.function.LibraryVariable
 import io.deepn.script.variables.function.LocalFunctionVariable
 import io.deepn.script.variables.memory.IndexedVariable
@@ -19,12 +16,11 @@ import io.deepn.script.variables.primitive.*
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.RuleNode
 import org.apache.commons.text.StringEscapeUtils
-import java.util.concurrent.atomic.AtomicReference
 
 
-class Visitor(private val scope: Scope) : DeepScriptBaseVisitor<Variable<*>>() {
+class Visitor(initialContext: ParserRuleContext, private val scope: Scope) : DeepScriptBaseVisitor<Variable<*>>() {
 
-    val currentContext = AtomicReference<ParserRuleContext?>(null)
+    var currentContext: ParserRuleContext = initialContext
 
     private fun variableCalls(
         baseVariable: Variable<*>,
@@ -86,10 +82,26 @@ class Visitor(private val scope: Scope) : DeepScriptBaseVisitor<Variable<*>>() {
         return visitBlock(context.block())
     }
 
+    private fun resolveBaseVariable(
+        name: String?,
+        expression: DeepScriptParser.ExpressionContext?,
+        returnMemoryAddress: Boolean
+    ): Variable<*> {
+        val baseVariable = if (name != null)
+            scope.resolve(name, returnMemoryAddress)
+        else
+            visit(expression)
+
+        if (!returnMemoryAddress && name != null && baseVariable is Void)
+            throw NameError("name '${name}' is not defined")
+
+        return baseVariable
+    }
+
     override fun visitBlock(context: DeepScriptParser.BlockContext): Variable<*> {
         var returnVariable: Variable<*> = Null
 
-        context.statementOrExpression().forEach {
+        context.statementGroup()?.statementOrExpression()?.forEach {
             returnVariable = if (it.statement() != null) visitStatement(it.statement())
             else visit(it.expression())
         }
@@ -111,7 +123,7 @@ class Visitor(private val scope: Scope) : DeepScriptBaseVisitor<Variable<*>>() {
 
     override fun shouldVisitNextChild(node: RuleNode?, result: Variable<*>?): Boolean {
         if (node?.parent is ParserRuleContext)
-            currentContext.set(node.parent as ParserRuleContext)
+            currentContext = node.parent as ParserRuleContext
 
         return true
     }
@@ -131,7 +143,7 @@ class Visitor(private val scope: Scope) : DeepScriptBaseVisitor<Variable<*>>() {
                 when {
                     context.NORMALSTRING() != null -> context.text.substringBetween("\"")
                     context.CHARSTRING() != null -> context.text.substringBetween("\'")
-                    context.LONGSTRING() != null -> context.text.substringBetween("[[", "]]")
+                    context.LONGSTRING() != null -> context.text.substringBetween("\"\"\"")
                     else -> context.text
                 }
             )
@@ -225,22 +237,51 @@ class Visitor(private val scope: Scope) : DeepScriptBaseVisitor<Variable<*>>() {
     }
 
     override fun visitVariableAssignment(context: DeepScriptParser.VariableAssignmentContext): Variable<*> {
-        val baseVariable = if (context.var_().NAME() != null)
-            scope.resolve(context.var_().NAME().text, true)
-        else
-            visit(context.var_().expression())
+        val baseVariable = resolveBaseVariable(context.var_().NAME()?.text, context.var_().expression(), true)
 
         val value = visit(context.expression())
 
         val parents = resolveVariables(baseVariable, context.var_().varSuffix())
 
-        when (val lastValue = parents.lastOrNull() ?: baseVariable) {
-            is MemoryAddressVariable -> lastValue.assign(value)
-            is IndexedVariable -> lastValue.replace(value)
-            else -> scope.assign(context.var_().NAME().text, value)
+        val isStatic = context.staticVariable() != null
+
+        if(isStatic && (context.var_().NAME() == null || context.var_().varSuffix().isNotEmpty())) {
+            throw NameError("static variable can only be assigned to global scope")
         }
 
-        return Null
+        when (val lastValue = parents.lastOrNull() ?: baseVariable) {
+            is MemoryAddressVariable -> lastValue.assign(value, isStatic)
+            is IndexedVariable -> lastValue.replace(value)
+            else -> scope.assign(context.var_().NAME().text, value, isStatic)
+        }
+
+        return Void
+    }
+
+    override fun visitVariableOperatorAssignment(context: DeepScriptParser.VariableOperatorAssignmentContext): Variable<*> {
+        val baseVariable = resolveBaseVariable(context.var_().NAME()?.text, context.var_().expression(), false)
+
+        val value = visit(context.expression())
+
+        val parents = resolveVariables(baseVariable, context.var_().varSuffix())
+
+        val lastValue = parents.lastOrNull() ?: baseVariable
+
+        val newValue = when (context.operatorAssignment().text) {
+            "+=" -> lastValue.detach().add(value)
+            "-=" -> lastValue.detach().subtract(value)
+            "*=" -> lastValue.detach().multiply(value)
+            "/=" -> lastValue.detach().divide(value)
+            "//=" -> lastValue.detach().floorDivide(value)
+            else -> Null
+        }
+
+        if (lastValue is IndexedVariable)
+            lastValue.replace(newValue)
+        else
+            scope.assign(context.var_().NAME().text, newValue)
+
+        return Void
     }
 
     override fun visitPrefixexp(context: DeepScriptParser.PrefixexpContext): Variable<*> {
@@ -256,13 +297,7 @@ class Visitor(private val scope: Scope) : DeepScriptBaseVisitor<Variable<*>>() {
     }
 
     override fun visitVar_(context: DeepScriptParser.Var_Context): Variable<*> {
-        val baseVariable = if (context.NAME() != null)
-            scope.resolve(context.NAME().text)
-        else
-            visit(context.expression())
-
-        if (context.NAME() != null && baseVariable == Null)
-            throw NameError("name '${context.NAME().text}' is not defined")
+        val baseVariable = resolveBaseVariable(context.NAME()?.text, context.expression(), false)
 
         return if (context.varSuffix().isEmpty())
             baseVariable
@@ -277,7 +312,7 @@ class Visitor(private val scope: Scope) : DeepScriptBaseVisitor<Variable<*>>() {
     override fun visitWhileLoop(context: DeepScriptParser.WhileLoopContext): Variable<*> {
         while (visit(context.expression()).toBoolean().value)
             visitBlock(context.block())
-        return Null
+        return Void
     }
 
     override fun visitRepeatLoop(context: DeepScriptParser.RepeatLoopContext): Variable<*> {
@@ -286,7 +321,7 @@ class Visitor(private val scope: Scope) : DeepScriptBaseVisitor<Variable<*>>() {
                 visitBlock(context.block())
             else break
         }
-        return Null
+        return Void
     }
 
     override fun visitForLoop(context: DeepScriptParser.ForLoopContext): Variable<*> {
@@ -295,7 +330,7 @@ class Visitor(private val scope: Scope) : DeepScriptBaseVisitor<Variable<*>>() {
 
         val initialValue = visit(context.expression(0))
         val limitValue = visit(context.expression(1))
-        val stepValue = if (context.expression().size > 1) visit(context.expression(2)) else IntegerVariable(1)
+        val stepValue = if (context.expression().size > 2) visit(context.expression(2)) else IntegerVariable(1)
 
         if (!initialValue.isNumber())
             throw TypeError("'for' initial value must be a number")
@@ -314,19 +349,21 @@ class Visitor(private val scope: Scope) : DeepScriptBaseVisitor<Variable<*>>() {
         }
 
         scope.remove(key)
-        return Null
+        return Void
     }
 
     override fun visitForeachLoop(context: DeepScriptParser.ForeachLoopContext): Variable<*> {
         val iterator = visit(context.expression()).toIterator()
         val key = context.NAME().text
 
+        if (scope.resolve(key, false) != Void) throw NameError("'$key' is already defined")
+
         for (value in iterator) {
             scope.assign(key, value)
             visitBlock(context.block())
         }
         scope.remove(key)
-        return Null
+        return Void
     }
 
     override fun visitCondition(context: DeepScriptParser.ConditionContext): Variable<*> {
@@ -345,7 +382,7 @@ class Visitor(private val scope: Scope) : DeepScriptBaseVisitor<Variable<*>>() {
         if (!conditionExecuted && context.elseCondition() != null)
             visitBlock(context.elseCondition().block())
 
-        return Null
+        return Void
     }
 
     override fun visitFunctionDeclaration(context: DeepScriptParser.FunctionDeclarationContext): Variable<*> {
@@ -367,12 +404,74 @@ class Visitor(private val scope: Scope) : DeepScriptBaseVisitor<Variable<*>>() {
                 context.funcbody().block()
             )
         )
-        return Null
+        return Void
     }
 
     override fun visitFunctionCall(context: DeepScriptParser.FunctionCallContext): Variable<*> {
         val baseVariable = visitVarOrExp(context.varOrExp())
         return variableCalls(baseVariable, context.args()).lastOrNull() ?: baseVariable
     }
+
+    override fun visitJsonObject(context: DeepScriptParser.JsonObjectContext): Variable<*> {
+        val json = ObjectVariable()
+        context.jsonPair().forEach {
+            val pairValue = visit(it)
+            if (pairValue != Void)
+                pairValue.name?.let { key ->
+                    json.setIndex(StringVariable(key), pairValue)
+                }
+        }
+        return json
+    }
+
+    override fun visitJsonPair(context: DeepScriptParser.JsonPairContext): Variable<*> {
+        if (context.expression() == null) return Void
+
+
+        val name: Variable<*> = if (context.string() != null)
+            visit(context.string())
+        else if (context.NAME() != null)
+            StringVariable(context.NAME().text)
+        else
+            visit(context.expression().first())
+
+        val value = visit(context.expression().last())
+
+        value.name = name.valueToString()
+        return value
+    }
+
+    override fun visitDeleteVar(context: DeepScriptParser.DeleteVarContext): Variable<*> {
+        val baseVariable = resolveBaseVariable(context.NAME().text, null, false)
+
+        val variables = resolveVariables(baseVariable, context.varSuffix())
+        if (variables.size >= 2) {
+            val parent = variables[variables.size - 2].detach()
+            val index = variables[variables.size - 1]
+
+            if (index is IndexedVariable)
+                parent.deleteIndex(index.index)
+        }
+
+        return Void
+    }
+
+    override fun visitLambdaExpression(context: DeepScriptParser.LambdaExpressionContext): Variable<*> {
+        val parameters = FunctionParameters()
+
+        context.NAME()?.forEach { nameField ->
+            val key = nameField.text
+            if (parameters.contains(key))
+                throw SyntaxError("duplicate argument '${key}' in function definition")
+            parameters[key] = null
+        }
+        return LocalFunctionVariable(
+            "lambda",
+            scope,
+            parameters,
+            context.expression()
+        )
+    }
+
 
 }

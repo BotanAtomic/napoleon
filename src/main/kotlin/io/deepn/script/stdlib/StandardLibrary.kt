@@ -30,6 +30,7 @@ object StandardLibrary {
         load(Math::class)
         load(Utils::class)
         load(List::class)
+        load(Json::class)
     }
 
     private fun load(libraryClass: KClass<*>) {

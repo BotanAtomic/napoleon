@@ -5,15 +5,21 @@ chunk
     ;
 
 block
-    : (statementOrExpression)* NEWLINE* returnStatement? NEWLINE*
+    : statementGroup? NEWLINE* returnStatement? NEWLINE*
+    ;
+
+statementGroup:
+    statementOrExpression (NEWLINE+ statementOrExpression)*
     ;
 
 statementOrExpression
-    : (statement NEWLINE*) | (expression NEWLINE*)
+    : statement | expression
     ;
 
 statement
     : variableAssignment
+    | variableOperatorAssignment
+    | deleteVar
     | breakStatement
     | whileLoop
     | repeatLoop
@@ -60,7 +66,15 @@ breakStatement
     ;
 
 variableAssignment
-    : var_ '=' expression
+    : staticVariable? var_ '=' expression
+    ;
+
+variableOperatorAssignment
+    : var_ operatorAssignment expression
+    ;
+
+deleteVar
+    : 'delete' (NAME varSuffix+)
     ;
 
 functionDeclaration
@@ -103,7 +117,17 @@ expression
     | expression operatorOr expression                      #operatorOrExpression
     | expression operatorBitwise expression                 #operatorBitwiseExpression
     | 'null'                                                #nullExpression
+    | jsonObject                                            #jsonExpression // do not parse here
+    | 'function' (NAME (',' NAME)*)? '->' expression        #lambdaExpression
     ;
+
+jsonPair
+ : NEWLINE* (('[' expression ']') | NAME | string) ':' expression NEWLINE*
+;
+
+jsonObject
+ : '{' NEWLINE* (jsonPair ( ',' jsonPair )*)? NEWLINE* '}'
+;
 
 prefixexp
     : varOrExp args*
@@ -134,18 +158,24 @@ funcbody
     ;
 
 tableconstructor
-    : '{' fieldlist? '}'
+    : '[' fieldlist? ']'
     ;
 
 fieldlist
     : expression (',' expression)*
     ;
 
+staticVariable
+    : 'static';
+
 operatorOr
 	: 'or';
 
 operatorAnd
 	: 'and';
+
+operatorAssignment
+	: '+=' | '-=' | '/=' | '//=' | '*=';
 
 operatorComparison
 	: '<' | '>' | '<=' | '>=' | '!=' | '==';
@@ -192,12 +222,12 @@ CHARSTRING
     ;
 
 LONGSTRING
-    : '[' NESTED_STR ']'
+    : '""' NESTED_STR '""'
     ;
 
 fragment
 NESTED_STR
-    : '[' .*? ']'
+    : '"' .*? '"'
     ;
 
 INT

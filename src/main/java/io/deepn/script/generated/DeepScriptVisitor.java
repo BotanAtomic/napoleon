@@ -23,6 +23,12 @@ public interface DeepScriptVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitBlock(DeepScriptParser.BlockContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link DeepScriptParser#statementGroup}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitStatementGroup(DeepScriptParser.StatementGroupContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link DeepScriptParser#statementOrExpression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -95,6 +101,18 @@ public interface DeepScriptVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitVariableAssignment(DeepScriptParser.VariableAssignmentContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link DeepScriptParser#variableOperatorAssignment}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitVariableOperatorAssignment(DeepScriptParser.VariableOperatorAssignmentContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link DeepScriptParser#deleteVar}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDeleteVar(DeepScriptParser.DeleteVarContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link DeepScriptParser#functionDeclaration}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -138,6 +156,13 @@ public interface DeepScriptVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitTableconstructorExpression(DeepScriptParser.TableconstructorExpressionContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code lambdaExpression}
+	 * labeled alternative in {@link DeepScriptParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitLambdaExpression(DeepScriptParser.LambdaExpressionContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code operatorUnaryExpression}
 	 * labeled alternative in {@link DeepScriptParser#expression}.
 	 * @param ctx the parse tree
@@ -179,6 +204,13 @@ public interface DeepScriptVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitOperatorAddSubExpression(DeepScriptParser.OperatorAddSubExpressionContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code jsonExpression}
+	 * labeled alternative in {@link DeepScriptParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitJsonExpression(DeepScriptParser.JsonExpressionContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code operatorOrExpression}
 	 * labeled alternative in {@link DeepScriptParser#expression}.
@@ -236,6 +268,18 @@ public interface DeepScriptVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitFc(DeepScriptParser.FcContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link DeepScriptParser#jsonPair}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitJsonPair(DeepScriptParser.JsonPairContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link DeepScriptParser#jsonObject}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitJsonObject(DeepScriptParser.JsonObjectContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link DeepScriptParser#prefixexp}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -290,6 +334,12 @@ public interface DeepScriptVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitFieldlist(DeepScriptParser.FieldlistContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link DeepScriptParser#staticVariable}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitStaticVariable(DeepScriptParser.StaticVariableContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link DeepScriptParser#operatorOr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -301,6 +351,12 @@ public interface DeepScriptVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitOperatorAnd(DeepScriptParser.OperatorAndContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link DeepScriptParser#operatorAssignment}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitOperatorAssignment(DeepScriptParser.OperatorAssignmentContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link DeepScriptParser#operatorComparison}.
 	 * @param ctx the parse tree

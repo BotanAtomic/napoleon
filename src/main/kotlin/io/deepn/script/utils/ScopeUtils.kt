@@ -25,6 +25,5 @@ fun Scope.implementFunctions(functions: List<NativeFunction>, environment: DeepS
             packageVariable.setIndex(StringVariable(it.name), functionVariable)
             this.protectName(it.packageName)
         }
-
     }
 }

@@ -9,4 +9,5 @@ object Utils {
 
     fun str(variable: Variable<*>) = StringVariable(variable.valueToString())
 
+    fun type(variable: Variable<*>) = StringVariable(variable.type())
 }

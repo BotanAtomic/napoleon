@@ -17,6 +17,8 @@ dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation(kotlin("reflect"))
 
+    implementation("com.google.code.gson:gson:2.8.9")
+
     antlr("org.antlr:antlr4:4.9.3")
     implementation("org.antlr:antlr4-runtime:4.9.3")
 

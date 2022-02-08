@@ -1,9 +1,9 @@
 package io.deepn.script.variables.primitive
 
-import io.deepn.script.error.KeyError
+import io.deepn.script.stdlib.Json.stringify
 import io.deepn.script.variables.Null
 import io.deepn.script.variables.Variable
-
+import io.deepn.script.variables.memory.MemoryAddressVariable
 
 class ObjectVariable : Variable<MutableMap<String, Variable<*>>>(HashMap()) {
 
@@ -12,7 +12,7 @@ class ObjectVariable : Variable<MutableMap<String, Variable<*>>>(HashMap()) {
     override fun getIndex(position: Variable<*>): Variable<*> {
         val key = position.valueToString()
         if (!value.containsKey(key))
-            throw KeyError("no key '$key'")
+            return MemoryAddressVariable { value, _ -> setIndex(position, value) }
         return value.getOrDefault(key, Null)
     }
 
@@ -21,7 +21,18 @@ class ObjectVariable : Variable<MutableMap<String, Variable<*>>>(HashMap()) {
         return variable
     }
 
+    override fun deleteIndex(position: Variable<*>): Variable<*> {
+        return value.remove(position.valueToString()) ?: Null
+    }
+
     override fun length(): IntegerVariable {
         return IntegerVariable(value.size)
     }
+    
+    operator fun set(key: String, value: Variable<*>) {
+        super.value[key] = value
+    }
+
+    override fun valueToString() = this.stringify(BooleanVariable(true)).value
+
 }

@@ -2,14 +2,22 @@ package io.deepn.script.variables
 
 import io.deepn.script.error.TypeError
 import io.deepn.script.scope.findFunctionExtension
-import io.deepn.script.variables.primitive.BooleanVariable
-import io.deepn.script.variables.primitive.IntegerVariable
-import io.deepn.script.variables.primitive.StringVariable
-import java.util.*
+import io.deepn.script.variables.function.LocalFunctionVariable
+import io.deepn.script.variables.function.NativeFunctionVariable
+import io.deepn.script.variables.memory.IndexedVariable
+import io.deepn.script.variables.primitive.*
+import java.util.LinkedList
+import kotlin.collections.LinkedHashMap
 
 object Null : Variable<Any>(Any()) {
     override fun type() = "null"
     override fun toString() = "null"
+    override fun valueToString() = toString()
+}
+
+object Void : Variable<Any>(Any()) {
+    override fun type() = "void"
+    override fun toString() = "void"
     override fun valueToString() = toString()
 }
 
@@ -114,19 +122,38 @@ abstract class Variable<T>(val value: T) {
         "'${type()}' does not support item assignment"
     )
 
+    open fun deleteIndex(position: Variable<*>): Variable<*> = throw TypeError(
+        "'${type()}' does not support item deletion"
+    )
+
     open fun toBoolean(): BooleanVariable = BooleanVariable(true)
 
-    open fun call(arguments: FunctionArguments): Variable<*> = throw TypeError(type())
+    open fun call(arguments: FunctionArguments): Variable<*> = throw TypeError(
+        "'${type()}' is not callable"
+    )
 
     open fun toIterator(): Iterator<Variable<*>> = throw TypeError(
-        "'${type()}' object is not iterable"
+        "'${type()}' is not iterable"
     )
 
     open fun length(): IntegerVariable = throw TypeError(
-        "object of type '${type()}' has no length"
+        "type '${type()}' has no length"
     )
 
     override fun toString(): String {
         return "Variable(value='${valueToString()}', type='${type()}', name=${name})"
     }
+}
+
+fun classToType(variableClass: Any?) = when (variableClass) {
+    NativeFunctionVariable::class -> "native_function"
+    LocalFunctionVariable::class -> "function"
+    IndexedVariable::class -> "index"
+    BooleanVariable::class -> "boolean"
+    FloatVariable::class -> "float"
+    IntegerVariable::class -> "int"
+    ListVariable::class -> "list"
+    ObjectVariable::class -> "object"
+    StringVariable::class -> "string"
+    else -> "null"
 }

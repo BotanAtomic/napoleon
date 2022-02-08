@@ -16,7 +16,9 @@ class ComparisonTest {
         scriptAssert("true != false", true)
         scriptAssert("true and false", false)
         scriptAssert("true or false", true)
-        scriptAssert("{1,2,3} == {1,2,3}", true)
+        scriptAssert("[1,2,3] == [1,2,3]", true)
+        scriptAssert("[1,2,3] == [3,2,1]", false)
+        scriptAssert("[1,2,3] == ([3,2,1]).reverse()", true)
         scriptAssert("'bbb' > 'aaa'", true)
         scriptAssert("'aaa' == 'aaa'", true)
     }

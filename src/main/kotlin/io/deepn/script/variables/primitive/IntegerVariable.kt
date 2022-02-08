@@ -20,6 +20,7 @@ class IntegerVariable : Variable<Long>, NumberVariable {
         return when (by) {
             is IntegerVariable -> IntegerVariable(value + by.value)
             is FloatVariable -> FloatVariable(value + by.value)
+            is StringVariable -> StringVariable(valueToString() + by.value)
             else -> super.add(by)
         }
     }
