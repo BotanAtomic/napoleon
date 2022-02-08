@@ -329,7 +329,7 @@ class Visitor(
         val json = ObjectVariable()
         context.jsonPair().forEach {
             val pairValue = visitJsonPair(it)
-            json.setIndex(pairValue.key(), pairValue)
+            json.setIndex(pairValue.key(), pairValue.value())
         }
         return json
     }
