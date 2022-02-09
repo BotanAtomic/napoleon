@@ -1,16 +1,15 @@
 package io.deepn.script.utils
 
+import io.deepn.script.Status
 import io.deepn.script.Visitor
 import io.deepn.script.error.NameError
 import io.deepn.script.generated.DeepScriptParser
-import io.deepn.script.scope.Scope
 import io.deepn.script.variables.FunctionArguments
 import io.deepn.script.variables.Variable
 import io.deepn.script.variables.Void
 import io.deepn.script.variables.function.LibraryVariable
 import io.deepn.script.variables.memory.IndexedVariable
 import io.deepn.script.variables.primitive.StringVariable
-
 
 
 fun Visitor.resolveBaseVariable(
@@ -74,4 +73,11 @@ fun Visitor.resolveVariables(
     }
 
     return variables
+}
+
+fun Visitor.enterLoop(loop: () -> Unit) {
+    loop()
+
+    if (status != Status.RETURNED)
+        status = Status.NORMAL
 }

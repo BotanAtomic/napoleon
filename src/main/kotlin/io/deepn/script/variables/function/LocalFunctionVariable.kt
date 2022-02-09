@@ -4,12 +4,10 @@ import io.deepn.script.Visitor
 import io.deepn.script.error.StackTrace
 import io.deepn.script.error.SyntaxError
 import io.deepn.script.error.TypeError
-import io.deepn.script.generated.DeepScriptParser.ReturnStatementContext
 import io.deepn.script.scope.Scope
 import io.deepn.script.variables.FunctionArguments
 import io.deepn.script.variables.FunctionParameters
 import io.deepn.script.variables.Variable
-import io.deepn.script.variables.Void
 import org.antlr.v4.runtime.ParserRuleContext
 
 
@@ -58,7 +56,6 @@ class LocalFunctionVariable(
     private val parentScope: Scope,
     private val parameters: FunctionParameters,
     private val block: ParserRuleContext,
-    private val returnStatement: ReturnStatementContext?,
     private val stackTrace: StackTrace,
 ) : Variable<Any>(Any()) {
 
@@ -93,8 +90,7 @@ class LocalFunctionVariable(
 
         val newVisitor = Visitor(block, Scope(parentScope, toInject), stackTrace)
         stackTrace.stack(newVisitor)
-        newVisitor.visit(block)
-        val result = returnStatement?.let { newVisitor.visitReturnStatement(it) } ?: Void
+        val result = newVisitor.visit(block)
         stackTrace.pop()
         return result
     }

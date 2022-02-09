@@ -24,17 +24,6 @@ class LoopTest {
             end
             i
         """.trimIndent(), 400000 )
-
-        scriptAssert("""
-            a = 10
-
-            --[ repeat loop execution --]
-            repeat
-               a = a + 1
-            until( a > 15 )
-
-            a
-        """.trimIndent(), 16)
     }
 
     @Test

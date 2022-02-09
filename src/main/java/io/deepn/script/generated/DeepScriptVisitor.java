@@ -65,12 +65,6 @@ public interface DeepScriptVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitWhileLoop(DeepScriptParser.WhileLoopContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link DeepScriptParser#repeatLoop}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitRepeatLoop(DeepScriptParser.RepeatLoopContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link DeepScriptParser#forLoop}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

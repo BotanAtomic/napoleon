@@ -5,7 +5,7 @@ chunk
     ;
 
 block
-    : statementGroup? NEWLINE*
+    : statementGroup? NEWLINE* returnStatement? NEWLINE*
     ;
 
 statementGroup:
@@ -22,7 +22,6 @@ statement
     | deleteVar
     | breakStatement
     | whileLoop
-    | repeatLoop
     | forLoop
     | foreachLoop
     | condition
@@ -43,10 +42,6 @@ elseCondition
 
 whileLoop
     : 'while' expression 'do' NEWLINE* block 'end'
-    ;
-
-repeatLoop
-    : 'repeat' NEWLINE* block 'until' expression
     ;
 
 forLoop
@@ -154,7 +149,7 @@ args
     ;
 
 funcbody
-    : '(' nameList? ')' NEWLINE* block returnStatement? NEWLINE* 'end'
+    : '(' nameList? ')' NEWLINE* block NEWLINE* 'end'
     ;
 
 tableconstructor

@@ -17,37 +17,59 @@ import io.deepn.script.variables.internal.PairVariable
 import io.deepn.script.variables.memory.IndexedVariable
 import io.deepn.script.variables.memory.MemoryAddressVariable
 import io.deepn.script.variables.primitive.*
+import io.deepn.script.variables.primitive.api.NumberVariable
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.RuleNode
 import org.apache.commons.text.StringEscapeUtils
 
+enum class Status {
+    NORMAL, BREAK, RETURNED
+}
+
 class Visitor(
     initialContext: ParserRuleContext,
     val scope: Scope,
-    private val stackTrace: StackTrace
+    private val stackTrace: StackTrace,
 ) : DeepScriptBaseVisitor<Variable<*>>() {
 
+    var status = Status.NORMAL
+
     var currentContext: ParserRuleContext = initialContext
+
+    var toReturn: Variable<*> = Void
 
     override fun visitChunk(context: DeepScriptParser.ChunkContext) = visitBlock(context.block())
 
     override fun visitBlock(context: DeepScriptParser.BlockContext): Variable<*> {
-        var returnVariable: Variable<*> = Null
+        var returnVariable: Variable<*> = Void
 
         context.statementGroup()?.statementOrExpression()?.forEach {
-            returnVariable = if (it.statement() != null) visitStatement(it.statement())
-            else visit(it.expression())
+            if (status == Status.NORMAL) {
+                returnVariable = if (it.statement() != null)
+                    visitStatement(it.statement())
+                else
+                    visit(it.expression())
+            }
         }
+
+        if (context.returnStatement() != null && status == Status.NORMAL)
+            visitReturnStatement(context.returnStatement())
+
+        if (toReturn != Void)
+            return toReturn
 
         return returnVariable
     }
 
-    override fun visitReturnStatement(context: DeepScriptParser.ReturnStatementContext): Variable<*> {
+    override fun visitReturnStatement(context: DeepScriptParser.ReturnStatementContext): Void {
         val returnedValue = visitExpressionList(context.expressionList())
-        return if (returnedValue.value.size == 1) returnedValue.value[0] else returnedValue
+        status = Status.RETURNED
+        toReturn = if (returnedValue.value.size == 1) returnedValue.value[0] else returnedValue
+        return Void
     }
 
     override fun shouldVisitNextChild(node: RuleNode?, result: Variable<*>?): Boolean {
+        if (status != Status.NORMAL) return false
         if (node?.parent is ParserRuleContext) currentContext = node.parent as ParserRuleContext
         return true
     }
@@ -112,7 +134,10 @@ class Visitor(
         return Void
     }
 
-    override fun visitBreakStatement(context: DeepScriptParser.BreakStatementContext) = Null
+    override fun visitBreakStatement(context: DeepScriptParser.BreakStatementContext): Void {
+        status = Status.BREAK
+        return Void
+    }
 
     override fun visitNumber(context: DeepScriptParser.NumberContext) = when {
         context.INT() != null -> IntegerVariable(context.INT().text)
@@ -229,14 +254,13 @@ class Visitor(
         ListVariable().apply { context?.expression()?.forEach { this.insert(visit(it)) } }
 
     override fun visitWhileLoop(context: DeepScriptParser.WhileLoopContext): Void {
-        while (visit(context.expression()).toBoolean().value) visitBlock(context.block())
-        return Void
-    }
+        enterLoop {
+            while (visit(context.expression()).toBoolean().value) {
+                visitBlock(context.block())
 
-    override fun visitRepeatLoop(context: DeepScriptParser.RepeatLoopContext): Void {
-        while (true) {
-            if (!visit(context.expression()).toBoolean().value) visitBlock(context.block())
-            else break
+                if (status == Status.BREAK)
+                    break
+            }
         }
         return Void
     }
@@ -248,17 +272,20 @@ class Visitor(
         val limitValue = visit(context.expression(1))
         val stepValue = if (context.expression().size > 2) visit(context.expression(2)) else IntegerVariable(1)
 
-        if (!initialValue.isNumber()) throw TypeError("'for' initial value must be a number")
-        if (!limitValue.isNumber()) throw TypeError("'for' limit must be a number")
-        if (!stepValue.isNumber()) throw TypeError("'for' step must be a number")
+        if (initialValue !is NumberVariable) throw TypeError("'for' initial value must be a number")
+        if (limitValue !is NumberVariable) throw TypeError("'for' limit must be a number")
+        if (stepValue !is NumberVariable) throw TypeError("'for' step must be a number")
 
         if (stepValue.isZero() || limitValue.eq(initialValue).value) return Void
         if (limitValue.gt(initialValue).value && stepValue.isNegative()) return Void
         if (limitValue.lt(initialValue).value && stepValue.isPositive()) return Void
 
-        createForLoop(initialValue, limitValue, stepValue) {
-            scope.assign(key, it)
-            visitBlock(context.block())
+        enterLoop {
+            createForLoop(initialValue, limitValue, stepValue) {
+                scope.assign(key, it)
+                visitBlock(context.block())
+                status == Status.NORMAL
+            }
         }
 
         scope.remove(key)
@@ -271,10 +298,15 @@ class Visitor(
 
         if (scope.resolve(key, false) != Void) throw NameError("'$key' is already defined")
 
-        for (value in iterator) {
-            scope.assign(key, value)
-            visitBlock(context.block())
+        enterLoop {
+            for (value in iterator) {
+                scope.assign(key, value)
+                visitBlock(context.block())
+                if (status == Status.BREAK)
+                    break
+            }
         }
+
         scope.remove(key)
         return Void
     }
@@ -313,7 +345,6 @@ class Visitor(
                 scope,
                 parameters,
                 context.funcbody().block(),
-                context.funcbody().returnStatement(),
                 stackTrace
             )
         )
@@ -360,7 +391,6 @@ class Visitor(
             scope,
             parameters,
             context.expression(),
-            null,
             stackTrace
         )
     }

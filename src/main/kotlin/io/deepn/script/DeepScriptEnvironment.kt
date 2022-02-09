@@ -32,7 +32,7 @@ class DeepScriptEnvironment(
     val logger: Logger = SYSTEM_LOGGER
 ) {
 
-    val stackTrace = StackTrace()
+    private val stackTrace = StackTrace()
 
     private var context: DeepScriptParser.ChunkContext? = null
     private val errorHandler = DeepScriptErrorHandler()
@@ -66,7 +66,7 @@ class DeepScriptEnvironment(
                         error = if (throwable is DeepScriptError)
                             throwable
                         else
-                            UnknownError(throwable.message)
+                            UnknownError(throwable.message).also { throwable.printStackTrace() }
                     }
                 }
             }
