@@ -31,10 +31,10 @@ fun main() {
             it.responseHeaders.add("Access-Control-Allow-Origin", "*")
 
             if (it.requestMethod.equals("OPTIONS")) {
-                it.responseHeaders.add("Access-Control-Allow-Methods", "GET, OPTIONS");
-                it.responseHeaders.add("Access-Control-Allow-Headers", "Content-Type,Authorization");
-                it.sendResponseHeaders(204, -1);
-                return@createContext;
+                it.responseHeaders.add("Access-Control-Allow-Methods", "GET, OPTIONS")
+                it.responseHeaders.add("Access-Control-Allow-Headers", "Content-Type,Authorization")
+                it.sendResponseHeaders(204, -1)
+                return@createContext
             }
             val scope = Scope()
             val interpreter = DeepScriptEnvironment(
@@ -57,7 +57,12 @@ fun main() {
             if (compilationResult.success.not()) {
                 resultBuilder.append("Compilation failed.").append("\n")
                 compilationResult.errors.forEach { grammarError ->
-                    resultBuilder.append("\tline ${grammarError.start?.line}: ${grammarError.type}").append("\n")
+                    println(grammarError)
+                    resultBuilder.append("\tline ${grammarError.start?.line}:${grammarError.start?.charPositionInLine} -> ${grammarError.type}")
+
+                    if (grammarError.expectedTokens != null)
+                        resultBuilder.append(", expecting ${grammarError.expectedTokens?.joinToString()}")
+                    resultBuilder.append("\n")
                 }
             } else {
                 val executionResult = interpreter.execute()
@@ -68,11 +73,14 @@ fun main() {
                     .append("\n")
                 if (executionResult.success.not()) {
                     resultBuilder.append(IntRange(0, 5).joinToString(" ") { "" })
-                        .append(executionResult.error?.type).append(" -> ").append(executionResult.error?.message).append(":")
+                        .append(executionResult.error?.type).append(" -> ").append(executionResult.error?.message)
+                        .append(":")
                         .append("\n")
 
-                    executionResult.error?.lines?.forEach {line ->
-                        resultBuilder.append("\t").append("line ${line.start.line}: ${line.highlight}").append("\n")
+                    executionResult.error?.lines?.forEach { line ->
+                        resultBuilder.append("\t")
+                            .append("line ${line.start.line}:${line.start.charPositionInLine} -> ${line.highlight}")
+                            .append("\n")
                     }
                 }
                 resultBuilder.append(IntRange(0, 5).joinToString(" ") { "" })
@@ -83,9 +91,9 @@ fun main() {
                 resultBuilder.append("\n").append(IntRange(0, 20).joinToString(" ") { "#" }).append("\n")
 
                 scope.variables.forEach { (key, value) ->
-                    if(value !is LibraryVariable && value !is NativeFunctionVariable) {
+                    if (value !is LibraryVariable && value !is NativeFunctionVariable) {
                         resultBuilder.append("\t")
-                        if(value is ObjectVariable)
+                        if (value is ObjectVariable)
                             resultBuilder.append("$key -> ${value.stringify().value} (${value.type()})").append("\n")
                         else
                             resultBuilder.append("$key -> ${value.valueToString()} (${value.type()})").append("\n")

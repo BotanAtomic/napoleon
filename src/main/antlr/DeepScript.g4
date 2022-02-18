@@ -8,6 +8,10 @@ block
     : statementGroup? NEWLINE* returnStatement? NEWLINE*
     ;
 
+returnStatement
+    : 'return' expressionList?
+    ;
+
 statementGroup:
     statementOrExpression (NEWLINE+ statementOrExpression)*
     ;
@@ -28,37 +32,6 @@ statement
     | functionDeclaration
     ;
 
-condition
-    : 'if' expression 'then' NEWLINE* block elseifCondition* elseCondition? 'end'
-    ;
-
-elseifCondition
-    : 'elseif' expression 'then' NEWLINE* block
-    ;
-
-elseCondition
-    : 'else' NEWLINE* block
-    ;
-
-whileLoop
-    : 'while' expression 'do' NEWLINE* block 'end'
-    ;
-
-forLoop
-    : 'for' NAME '=' expression ',' expression (',' expression)? 'do' NEWLINE* block 'end'
-    ;
-
-foreachLoop
-    : 'for' NAME 'in' expression 'do' NEWLINE* block 'end'
-    ;
-
-returnStatement
-    : 'return' expressionList?
-    ;
-
-breakStatement
-    : 'break'
-    ;
 
 variableAssignment
     : staticVariable? var_ '=' expression
@@ -72,9 +45,46 @@ deleteVar
     : 'delete' (NAME varSuffix+)
     ;
 
+breakStatement
+    : 'break'
+    ;
+
+
+whileLoop
+    : 'while' expression 'do' NEWLINE* block 'end'
+    ;
+
+forLoop
+    : 'for' NAME '=' expression ',' expression (',' expression)? 'do' NEWLINE* block 'end'
+    ;
+
+foreachLoop
+    : 'for' NAME 'in' expression 'do' NEWLINE* block 'end'
+    ;
+
+
+condition
+    : 'if' expression 'then' NEWLINE* block elseifCondition* elseCondition? 'end'
+    ;
+
+elseifCondition
+    : 'elseif' expression 'then' NEWLINE* block
+    ;
+
+elseCondition
+    : 'else' NEWLINE* block
+    ;
+
+
 functionDeclaration
     : 'function' NAME funcbody
     ;
+
+
+funcbody
+    : '(' nameList? ')' NEWLINE* block NEWLINE* 'end'
+    ;
+
 
 nameList
     : functionNameField (',' functionNameField)*
@@ -82,14 +92,6 @@ nameList
 
 functionNameField
     : NAME ('=' expression)?
-    ;
-
-namedExpressionList
-    : namedExpression (',' namedExpression)*
-    ;
-
-namedExpression
-    : ((NAME '=' ) ? expression)
     ;
 
 expressionList
@@ -117,12 +119,12 @@ expression
     ;
 
 jsonPair
- : NEWLINE* (('[' expression ']') | NAME | string) ':' expression NEWLINE*
-;
+    : NEWLINE* (('[' expression ']') | NAME | string) ':' expression NEWLINE*
+    ;
 
 jsonObject
- : '{' NEWLINE* (jsonPair ( ',' jsonPair )*)? NEWLINE* '}'
-;
+    : '{' NEWLINE* (jsonPair ( ',' jsonPair )*)? NEWLINE* '}'
+    ;
 
 prefixexp
     : varOrExp args*
@@ -148,9 +150,14 @@ args
     : '(' namedExpressionList? ')'
     ;
 
-funcbody
-    : '(' nameList? ')' NEWLINE* block NEWLINE* 'end'
+namedExpressionList
+    : namedExpression (',' namedExpression)*
     ;
+
+namedExpression
+    : ((NAME '=' ) ? expression)
+    ;
+
 
 tableconstructor
     : '[' fieldlist? ']'

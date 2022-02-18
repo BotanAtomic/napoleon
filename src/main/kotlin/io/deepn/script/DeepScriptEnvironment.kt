@@ -44,6 +44,7 @@ class DeepScriptEnvironment(
             lexer.errorListeners.clear()
             lexer.addErrorListener(errorHandler)
             val parser = DeepScriptParser(CommonTokenStream(lexer))
+            parser.errorHandler = DeepScriptStrategyHandler()
             parser.errorListeners.clear()
             parser.addErrorListener(errorHandler)
             this.context = parser.chunk()
@@ -85,6 +86,7 @@ class DeepScriptEnvironment(
                 )
             }
 
+            scope.snapshot()
             return DeepScriptExecutionResult(compilationException, time, returnedVariable)
         } ?: throw RuntimeException("script is not compiled")
     }

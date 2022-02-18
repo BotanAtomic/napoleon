@@ -38,6 +38,11 @@ class Visitor(
 
     var toReturn: Variable<*> = Void
 
+    override fun shouldVisitNextChild(node: RuleNode?, result: Variable<*>?): Boolean {
+        if (node?.parent is ParserRuleContext) currentContext = node.parent as ParserRuleContext
+        return status == Status.NORMAL
+    }
+
     override fun visitChunk(context: DeepScriptParser.ChunkContext) = visitBlock(context.block())
 
     override fun visitBlock(context: DeepScriptParser.BlockContext): Variable<*> {
@@ -61,6 +66,7 @@ class Visitor(
         return returnVariable
     }
 
+
     override fun visitReturnStatement(context: DeepScriptParser.ReturnStatementContext): Void {
         val returnedValue = visitExpressionList(context.expressionList())
         status = Status.RETURNED
@@ -68,11 +74,6 @@ class Visitor(
         return Void
     }
 
-    override fun shouldVisitNextChild(node: RuleNode?, result: Variable<*>?): Boolean {
-        if (status != Status.NORMAL) return false
-        if (node?.parent is ParserRuleContext) currentContext = node.parent as ParserRuleContext
-        return true
-    }
 
     override fun visitVariableAssignment(context: DeepScriptParser.VariableAssignmentContext): Void {
         val baseVariable = resolveBaseVariable(context.var_().NAME()?.text, context.var_().expression(), true)
@@ -120,7 +121,7 @@ class Visitor(
         return Void
     }
 
-    override fun visitDeleteVar(context: DeepScriptParser.DeleteVarContext): Variable<*> {
+    override fun visitDeleteVar(context: DeepScriptParser.DeleteVarContext): Void {
         val baseVariable = resolveBaseVariable(context.NAME().text, null, false)
 
         val variables = resolveVariables(baseVariable, context.varSuffix())
@@ -136,6 +137,104 @@ class Visitor(
 
     override fun visitBreakStatement(context: DeepScriptParser.BreakStatementContext): Void {
         status = Status.BREAK
+        return Void
+    }
+
+    override fun visitWhileLoop(context: DeepScriptParser.WhileLoopContext): Void {
+        enterLoop {
+            while (visit(context.expression()).toBoolean().value) {
+                visitBlock(context.block())
+
+                if (status == Status.BREAK)
+                    break
+            }
+        }
+        return Void
+    }
+
+    override fun visitForLoop(context: DeepScriptParser.ForLoopContext): Void {
+        val key = context.NAME().text
+
+        val initialValue = visit(context.expression(0))
+        val limitValue = visit(context.expression(1))
+        val stepValue = if (context.expression().size > 2) visit(context.expression(2)) else IntegerVariable(1)
+
+        if (initialValue !is NumberVariable) throw TypeError("'for' initial value must be a number")
+        if (limitValue !is NumberVariable) throw TypeError("'for' limit must be a number")
+        if (stepValue !is NumberVariable) throw TypeError("'for' step must be a number")
+
+        if (stepValue.isZero() || limitValue.eq(initialValue).value) return Void
+        if (limitValue.gt(initialValue).value && stepValue.isNegative()) return Void
+        if (limitValue.lt(initialValue).value && stepValue.isPositive()) return Void
+
+        enterLoop {
+            createForLoop(initialValue, limitValue, stepValue) {
+                scope.assign(key, it)
+                visitBlock(context.block())
+                status == Status.NORMAL
+            }
+        }
+
+        scope.remove(key)
+        return Void
+    }
+
+    override fun visitForeachLoop(context: DeepScriptParser.ForeachLoopContext): Void {
+        val iterator = visit(context.expression()).toIterator()
+        val key = context.NAME().text
+
+        if (scope.resolve(key, false) != Void) throw NameError("'$key' is already defined")
+
+        enterLoop {
+            for (value in iterator) {
+                scope.assign(key, value)
+                visitBlock(context.block())
+                if (status == Status.BREAK)
+                    break
+            }
+        }
+
+        scope.remove(key)
+        return Void
+    }
+
+    override fun visitCondition(context: DeepScriptParser.ConditionContext): Void {
+        var conditionExecuted = false
+
+        fun executeCondition(expression: ParserRuleContext, block: DeepScriptParser.BlockContext) {
+            if (!conditionExecuted && visit(expression).toBoolean().value) {
+                visitBlock(block)
+                conditionExecuted = true
+            }
+        }
+
+        executeCondition(context.expression(), context.block())
+        context.elseifCondition()?.forEach { executeCondition(it.expression(), it.block()) }
+
+        if (!conditionExecuted && context.elseCondition() != null) visitBlock(context.elseCondition().block())
+
+        return Void
+    }
+
+    override fun visitFunctionDeclaration(context: DeepScriptParser.FunctionDeclarationContext): Void {
+        val parameters = FunctionParameters()
+
+        context.funcbody().nameList()?.functionNameField()?.forEach { nameField ->
+            val key = nameField.NAME().text
+            if (parameters.contains(key)) throw SyntaxError("duplicate argument '${key}' in function definition")
+            parameters[nameField.NAME().text] = (nameField.expression() != null).toProducer {
+                visit(nameField.expression())
+            }
+        }
+        scope.assign(
+            context.NAME().text, LocalFunctionVariable(
+                context.NAME().text,
+                scope,
+                parameters,
+                context.funcbody().block(),
+                stackTrace
+            )
+        )
         return Void
     }
 
@@ -253,103 +352,7 @@ class Visitor(
     override fun visitExpressionList(context: DeepScriptParser.ExpressionListContext?) =
         ListVariable().apply { context?.expression()?.forEach { this.insert(visit(it)) } }
 
-    override fun visitWhileLoop(context: DeepScriptParser.WhileLoopContext): Void {
-        enterLoop {
-            while (visit(context.expression()).toBoolean().value) {
-                visitBlock(context.block())
 
-                if (status == Status.BREAK)
-                    break
-            }
-        }
-        return Void
-    }
-
-    override fun visitForLoop(context: DeepScriptParser.ForLoopContext): Void {
-        val key = context.NAME().text
-
-        val initialValue = visit(context.expression(0))
-        val limitValue = visit(context.expression(1))
-        val stepValue = if (context.expression().size > 2) visit(context.expression(2)) else IntegerVariable(1)
-
-        if (initialValue !is NumberVariable) throw TypeError("'for' initial value must be a number")
-        if (limitValue !is NumberVariable) throw TypeError("'for' limit must be a number")
-        if (stepValue !is NumberVariable) throw TypeError("'for' step must be a number")
-
-        if (stepValue.isZero() || limitValue.eq(initialValue).value) return Void
-        if (limitValue.gt(initialValue).value && stepValue.isNegative()) return Void
-        if (limitValue.lt(initialValue).value && stepValue.isPositive()) return Void
-
-        enterLoop {
-            createForLoop(initialValue, limitValue, stepValue) {
-                scope.assign(key, it)
-                visitBlock(context.block())
-                status == Status.NORMAL
-            }
-        }
-
-        scope.remove(key)
-        return Void
-    }
-
-    override fun visitForeachLoop(context: DeepScriptParser.ForeachLoopContext): Void {
-        val iterator = visit(context.expression()).toIterator()
-        val key = context.NAME().text
-
-        if (scope.resolve(key, false) != Void) throw NameError("'$key' is already defined")
-
-        enterLoop {
-            for (value in iterator) {
-                scope.assign(key, value)
-                visitBlock(context.block())
-                if (status == Status.BREAK)
-                    break
-            }
-        }
-
-        scope.remove(key)
-        return Void
-    }
-
-    override fun visitCondition(context: DeepScriptParser.ConditionContext): Void {
-        var conditionExecuted = false
-
-        fun executeCondition(expression: ParserRuleContext, block: DeepScriptParser.BlockContext) {
-            if (!conditionExecuted && visit(expression).toBoolean().value) {
-                visitBlock(block)
-                conditionExecuted = true
-            }
-        }
-
-        executeCondition(context.expression(), context.block())
-        context.elseifCondition()?.forEach { executeCondition(it.expression(), it.block()) }
-
-        if (!conditionExecuted && context.elseCondition() != null) visitBlock(context.elseCondition().block())
-
-        return Void
-    }
-
-    override fun visitFunctionDeclaration(context: DeepScriptParser.FunctionDeclarationContext): Void {
-        val parameters = FunctionParameters()
-
-        context.funcbody().nameList()?.functionNameField()?.forEach { nameField ->
-            val key = nameField.NAME().text
-            if (parameters.contains(key)) throw SyntaxError("duplicate argument '${key}' in function definition")
-            parameters[nameField.NAME().text] = (nameField.expression() != null).toProducer {
-                visit(nameField.expression())
-            }
-        }
-        scope.assign(
-            context.NAME().text, LocalFunctionVariable(
-                context.NAME().text,
-                scope,
-                parameters,
-                context.funcbody().block(),
-                stackTrace
-            )
-        )
-        return Void
-    }
 
     override fun visitFunctionCall(context: DeepScriptParser.FunctionCallContext): Variable<*> {
         val baseVariable = visitVarOrExp(context.varOrExp())

@@ -1,6 +1,8 @@
 package io.deepn.script.error
 
+import io.deepn.script.utils.toText
 import org.antlr.v4.runtime.*
+
 
 data class ScriptToken(
     val line: Int,
@@ -15,13 +17,15 @@ data class ScriptToken(
 enum class SyntaxErrorEnum {
     NO_ALTERNATIVE,
     INPUT_MISMATCH,
+    MISSING_TOKEN,
     EXTRANEOUS_INPUT,
     UNKNOWN
 }
 
 data class GrammarSyntaxError(
     val start: ScriptToken?,
-    val type: SyntaxErrorEnum
+    val type: SyntaxErrorEnum,
+    val expectedTokens: List<String>? = null
 )
 
 data class DeepScriptExecutionError(
@@ -42,7 +46,13 @@ fun Token.toScriptToken() = ScriptToken(
     text, charPositionInLine
 )
 
-fun Int.toScriptToken() = ScriptToken(this, 0, 0, 0, "", 0)
+class MissingRecognitionException(
+    recognizer: Recognizer<*, *>,
+    input: IntStream,
+    context: ParserRuleContext
+) : RecognitionException(recognizer, input, context)
+
+fun Int.toScriptToken(position: Int) = ScriptToken(this, 0, 0, 0, "", position)
 
 class DeepScriptErrorHandler : BaseErrorListener() {
 
@@ -55,19 +65,63 @@ class DeepScriptErrorHandler : BaseErrorListener() {
         exceptions.add(
             when {
                 e is LexerNoViableAltException || e is NoViableAltException -> GrammarSyntaxError(
-                    e.offendingToken?.toScriptToken(),
+                    e.offendingToken?.toScriptToken() ?: line.toScriptToken(charPositionInLine),
                     SyntaxErrorEnum.NO_ALTERNATIVE
                 )
                 e is InputMismatchException -> GrammarSyntaxError(
-                    e.offendingToken?.toScriptToken(),
-                    SyntaxErrorEnum.INPUT_MISMATCH
+                    e.offendingToken?.toScriptToken() ?: line.toScriptToken(charPositionInLine),
+                    SyntaxErrorEnum.INPUT_MISMATCH,
+                    e.expectedTokens.toArray().map { recognizer.toText(it) }
+                )
+                e is MissingRecognitionException -> GrammarSyntaxError(
+                    e.offendingToken?.toScriptToken() ?: line.toScriptToken(charPositionInLine),
+                    SyntaxErrorEnum.MISSING_TOKEN,
+                    e.expectedTokens.toArray().map { recognizer.toText(it) }
                 )
                 offendingSymbol is CommonToken -> GrammarSyntaxError(
                     offendingSymbol.toScriptToken(),
-                    SyntaxErrorEnum.EXTRANEOUS_INPUT
+                    SyntaxErrorEnum.EXTRANEOUS_INPUT,
+                    e?.expectedTokens?.toArray()?.map {
+                        recognizer.vocabulary.getLiteralName(it) ?: recognizer.vocabulary.getSymbolicName(it)
+                        ?: recognizer.vocabulary.getDisplayName(it)
+                    }
                 )
-                else -> GrammarSyntaxError(line.toScriptToken(), SyntaxErrorEnum.UNKNOWN)
+                else -> GrammarSyntaxError(line.toScriptToken(charPositionInLine), SyntaxErrorEnum.UNKNOWN)
             }
         )
     }
+}
+
+class DeepScriptStrategyHandler : DefaultErrorStrategy() {
+
+    override fun reportMissingToken(recognizer: Parser) {
+        if (inErrorRecoveryMode(recognizer)) return
+
+        beginErrorCondition(recognizer)
+
+        val token = recognizer.currentToken
+        val expecting = getExpectedTokens(recognizer)
+        val message = "missing " + expecting.toString(recognizer.vocabulary) +
+                " at " + getTokenErrorDisplay(token)
+
+        recognizer.notifyErrorListeners(
+            token,
+            message,
+            MissingRecognitionException(recognizer, recognizer.inputStream, recognizer.context)
+        )
+    }
+
+    override fun reportUnwantedToken(recognizer: Parser) {
+        if (inErrorRecoveryMode(recognizer)) {
+            return
+        }
+        beginErrorCondition(recognizer)
+        val t = recognizer.currentToken
+        val tokenName = getTokenErrorDisplay(t)
+        val expecting = getExpectedTokens(recognizer)
+        val msg = "extraneous input " + tokenName + " expecting " +
+                expecting.toString(recognizer.vocabulary)
+        recognizer.notifyErrorListeners(t, msg, InputMismatchException(recognizer))
+    }
+
 }

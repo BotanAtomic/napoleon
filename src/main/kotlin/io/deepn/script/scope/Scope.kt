@@ -19,11 +19,14 @@ fun findFunctionExtension(variable: Variable<*>, index: StringVariable): Variabl
 class Scope(private val parent: Scope? = null, initialVariables: HashMap<String, Variable<*>>? = null) {
 
     private val protectedVariables = HashSet<String>()
-    private val staticVariables = HashSet<String>()
+    private val staticVariables = HashMap<String, Int>()
+
+    private var version = 0
 
     val variables = HashMap<String, Variable<*>>().apply {
         if (initialVariables != null)
             putAll(initialVariables)
+        initialVariables?.keys?.forEach { protectName(it) }
     }
 
     fun resolveOrCreate(key: String, toCreate: Variable<*>): Variable<*> {
@@ -43,13 +46,15 @@ class Scope(private val parent: Scope? = null, initialVariables: HashMap<String,
     }
 
     fun assign(key: String, variable: Variable<*>, isStatic: Boolean = false) {
-        if (isStatic && staticVariables.contains(key)) throw NameError("name '$key' is already static")
+        if (isStatic && staticVariables[key] == version) throw NameError("name '$key' is already static")
         if (protectedVariables.contains(key)) throw NameError("name '$key' is protected")
 
-        variables[key] = variable
+        if(!isStatic || !staticVariables.containsKey(key))
+            variables[key] = variable
 
-        if (isStatic)
-            staticVariables.add(key)
+        println("assign $key")
+
+        if (isStatic) staticVariables[key] = version
     }
 
     fun remove(key: String) {
@@ -60,8 +65,12 @@ class Scope(private val parent: Scope? = null, initialVariables: HashMap<String,
         protectedVariables.add(key)
     }
 
+    fun snapshot() {
+        version++
+    }
+
     override fun toString(): String {
-        val builder = StringBuilder("---Scope---\n")
+        val builder = StringBuilder("---Scope (${variables.size})---\n")
 
         variables.forEach {
             builder.append("${it.key} -> ${it.value}\n")

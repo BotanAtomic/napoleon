@@ -23,6 +23,12 @@ public interface DeepScriptVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitBlock(DeepScriptParser.BlockContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link DeepScriptParser#returnStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitReturnStatement(DeepScriptParser.ReturnStatementContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link DeepScriptParser#statementGroup}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -40,54 +46,6 @@ public interface DeepScriptVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitStatement(DeepScriptParser.StatementContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link DeepScriptParser#condition}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitCondition(DeepScriptParser.ConditionContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link DeepScriptParser#elseifCondition}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitElseifCondition(DeepScriptParser.ElseifConditionContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link DeepScriptParser#elseCondition}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitElseCondition(DeepScriptParser.ElseConditionContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link DeepScriptParser#whileLoop}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitWhileLoop(DeepScriptParser.WhileLoopContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link DeepScriptParser#forLoop}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitForLoop(DeepScriptParser.ForLoopContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link DeepScriptParser#foreachLoop}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitForeachLoop(DeepScriptParser.ForeachLoopContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link DeepScriptParser#returnStatement}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitReturnStatement(DeepScriptParser.ReturnStatementContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link DeepScriptParser#breakStatement}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitBreakStatement(DeepScriptParser.BreakStatementContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link DeepScriptParser#variableAssignment}.
 	 * @param ctx the parse tree
@@ -107,11 +65,59 @@ public interface DeepScriptVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitDeleteVar(DeepScriptParser.DeleteVarContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link DeepScriptParser#breakStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBreakStatement(DeepScriptParser.BreakStatementContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link DeepScriptParser#whileLoop}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitWhileLoop(DeepScriptParser.WhileLoopContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link DeepScriptParser#forLoop}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitForLoop(DeepScriptParser.ForLoopContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link DeepScriptParser#foreachLoop}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitForeachLoop(DeepScriptParser.ForeachLoopContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link DeepScriptParser#condition}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCondition(DeepScriptParser.ConditionContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link DeepScriptParser#elseifCondition}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitElseifCondition(DeepScriptParser.ElseifConditionContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link DeepScriptParser#elseCondition}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitElseCondition(DeepScriptParser.ElseConditionContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link DeepScriptParser#functionDeclaration}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitFunctionDeclaration(DeepScriptParser.FunctionDeclarationContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link DeepScriptParser#funcbody}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFuncbody(DeepScriptParser.FuncbodyContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link DeepScriptParser#nameList}.
 	 * @param ctx the parse tree
@@ -124,18 +130,6 @@ public interface DeepScriptVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitFunctionNameField(DeepScriptParser.FunctionNameFieldContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link DeepScriptParser#namedExpressionList}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitNamedExpressionList(DeepScriptParser.NamedExpressionListContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link DeepScriptParser#namedExpression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitNamedExpression(DeepScriptParser.NamedExpressionContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link DeepScriptParser#expressionList}.
 	 * @param ctx the parse tree
@@ -310,11 +304,17 @@ public interface DeepScriptVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitArgs(DeepScriptParser.ArgsContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link DeepScriptParser#funcbody}.
+	 * Visit a parse tree produced by {@link DeepScriptParser#namedExpressionList}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitFuncbody(DeepScriptParser.FuncbodyContext ctx);
+	T visitNamedExpressionList(DeepScriptParser.NamedExpressionListContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link DeepScriptParser#namedExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitNamedExpression(DeepScriptParser.NamedExpressionContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link DeepScriptParser#tableconstructor}.
 	 * @param ctx the parse tree
