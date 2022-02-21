@@ -13,7 +13,7 @@ import kotlin.random.Random.Default.nextLong
 @Package("math")
 object Math {
 
-    fun pi() = FloatVariable(PI)
+    val PI = FloatVariable(kotlin.math.PI)
 
     fun sin(x: NumberVariable): Variable<*> = FloatVariable(kotlin.math.sin(x.toDouble()))
 

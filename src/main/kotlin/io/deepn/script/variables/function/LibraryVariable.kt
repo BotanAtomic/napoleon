@@ -4,7 +4,7 @@ import io.deepn.script.error.KeyError
 import io.deepn.script.variables.Null
 import io.deepn.script.variables.Variable
 
-class LibraryVariable(private val libraryName: String) : Variable<MutableMap<String, NativeFunctionVariable>>(HashMap()) {
+class LibraryVariable(private val libraryName: String) : Variable<MutableMap<String, Variable<*>>>(HashMap()) {
 
     override fun type() = "'${libraryName}' library"
 
@@ -16,7 +16,7 @@ class LibraryVariable(private val libraryName: String) : Variable<MutableMap<Str
     }
 
     override fun setIndex(position: Variable<*>, variable: Variable<*>): Variable<*> {
-        value[position.valueToString()] = variable as NativeFunctionVariable
+        value[position.valueToString()] = variable
         return variable
     }
 

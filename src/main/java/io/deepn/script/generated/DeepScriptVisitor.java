@@ -249,6 +249,13 @@ public interface DeepScriptVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitNullExpression(DeepScriptParser.NullExpressionContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code expressionCall}
+	 * labeled alternative in {@link DeepScriptParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExpressionCall(DeepScriptParser.ExpressionCallContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code fc}
 	 * labeled alternative in {@link DeepScriptParser#expression}.
 	 * @param ctx the parse tree

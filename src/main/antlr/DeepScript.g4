@@ -116,6 +116,7 @@ expression
     | 'null'                                                #nullExpression
     | jsonObject                                            #jsonExpression // do not parse here
     | 'function' (NAME (',' NAME)*)? '->' expression        #lambdaExpression
+    | expression  '.' NAME args                             #expressionCall
     ;
 
 jsonPair

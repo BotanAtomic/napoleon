@@ -90,7 +90,7 @@ fun main() {
 
                 resultBuilder.append("\n").append(IntRange(0, 20).joinToString(" ") { "#" }).append("\n")
 
-                scope.getVariables().forEach { (key, value) ->
+                scope.getVariables(1).forEach { (key, value) ->
                     if (value !is LibraryVariable && value !is NativeFunctionVariable) {
                         resultBuilder.append("\t")
                         if (value is ObjectVariable)

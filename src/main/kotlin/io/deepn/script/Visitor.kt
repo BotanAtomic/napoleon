@@ -353,7 +353,6 @@ class Visitor(
         ListVariable().apply { context?.expression()?.forEach { this.insert(visit(it)) } }
 
 
-
     override fun visitFunctionCall(context: DeepScriptParser.FunctionCallContext): Variable<*> {
         val baseVariable = visitVarOrExp(context.varOrExp())
         return variableCalls(baseVariable, context.args()).lastOrNull() ?: baseVariable
@@ -396,5 +395,11 @@ class Visitor(
             context.expression(),
             stackTrace
         )
+    }
+
+    override fun visitExpressionCall(context: DeepScriptParser.ExpressionCallContext): Variable<*> {
+        val baseExpression = visit(context.expression())
+        val function = baseExpression.getExtensionFunction(StringVariable(context.NAME().text))
+        return variableCalls(function, listOf(context.args())).lastOrNull() ?: Null
     }
 }

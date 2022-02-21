@@ -1,7 +1,7 @@
 import org.junit.jupiter.api.Test
 import java.util.*
 
-class NativeFunctionTest {
+class NativeLibraryTest {
 
     @Test
     fun `native function`() {
@@ -41,6 +41,11 @@ class NativeFunctionTest {
             list
         """.trimIndent(), LinkedList<Any>()
         )
+    }
+
+    @Test
+    fun `built in variables`() {
+        scriptAssert("math.PI", 3.141592653589793)
     }
 
 }
