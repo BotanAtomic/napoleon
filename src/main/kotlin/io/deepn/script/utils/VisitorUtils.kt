@@ -81,6 +81,6 @@ fun Visitor.resolveVariables(
 fun Visitor.enterLoop(loop: () -> Unit) {
     loop()
 
-    if (status != Status.RETURNED)
+    if (status != Status.RETURN)
         status = Status.NORMAL
 }

@@ -23,7 +23,7 @@ import org.antlr.v4.runtime.tree.RuleNode
 import org.apache.commons.text.StringEscapeUtils
 
 enum class Status {
-    NORMAL, BREAK, RETURNED
+    NORMAL, BREAK, RETURN
 }
 
 class Visitor(
@@ -69,7 +69,7 @@ class Visitor(
 
     override fun visitReturnStatement(context: DeepScriptParser.ReturnStatementContext): Void {
         val returnedValue = visitExpressionList(context.expressionList())
-        status = Status.RETURNED
+        status = Status.RETURN
         toReturn = if (returnedValue.value.size == 1) returnedValue.value[0] else returnedValue
         return Void
     }

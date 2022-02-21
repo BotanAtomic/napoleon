@@ -38,7 +38,6 @@ object StandardLibrary {
         listOf(IO, Math, Utils, List, Json).forEach { load(it::class) }
     }
 
-
     fun findFunctionExtension(variable: Variable<*>, index: StringVariable): Variable<*>? {
         return functionExtensions[variable::class]?.get(index.value)?.createExtension(variable)
     }
