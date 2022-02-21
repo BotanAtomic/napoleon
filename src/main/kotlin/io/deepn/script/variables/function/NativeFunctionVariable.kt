@@ -1,6 +1,6 @@
 package io.deepn.script.variables.function
 
-import io.deepn.script.DeepScriptEnvironment
+import io.deepn.script.DefaultExecutionEnvironment
 import io.deepn.script.error.ArgumentTypeError
 import io.deepn.script.error.SyntaxError
 import io.deepn.script.error.TypeError
@@ -56,7 +56,7 @@ private fun NativeFunctionVariable.checkArguments(
 
 class NativeFunctionVariable(
     nativeFunction: NativeFunction,
-    private val environment: DeepScriptEnvironment,
+    private val environment: DefaultExecutionEnvironment,
     private val source: Variable<*>? = null,
 ) : Variable<NativeFunction>(nativeFunction) {
 

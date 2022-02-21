@@ -6,8 +6,8 @@ import io.deepn.script.generated.DeepScriptParser
 import io.deepn.script.logger.Logger
 import io.deepn.script.logger.SYSTEM_LOGGER
 import io.deepn.script.scope.Scope
+import io.deepn.script.scope.impl.BufferedScope
 import io.deepn.script.stdlib.StandardLibrary
-import io.deepn.script.utils.implementFunctions
 import io.deepn.script.variables.Variable
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
@@ -26,18 +26,32 @@ data class DeepScriptExecutionResult(
     val success: Boolean = (error == null)
 )
 
-class DeepScriptEnvironment(
+interface ExecutionEnvironment {
+
+    fun compile(): DeepScriptCompilationResult
+
+    fun execute(): DeepScriptExecutionResult
+
+}
+
+class DefaultExecutionEnvironment(
     private val source: String,
-    private val scope: Scope = Scope(),
+    val scope: Scope = BufferedScope(),
     val logger: Logger = SYSTEM_LOGGER
-) {
+) : ExecutionEnvironment {
 
     private val stackTrace = StackTrace()
 
     private var context: DeepScriptParser.ChunkContext? = null
     private val errorHandler = DeepScriptErrorHandler()
 
-    fun compile(): DeepScriptCompilationResult {
+    private val standardLibrary = StandardLibrary.generateLibrary(this)
+
+    init {
+        scope.implementsLibrary(standardLibrary)
+    }
+
+    override fun compile(): DeepScriptCompilationResult {
         if (this.context != null) return DeepScriptCompilationResult(ArrayList(), 0)
         val time = measureTimeMillis {
             val lexer = DeepScriptLexer(CharStreams.fromString(source))
@@ -49,11 +63,10 @@ class DeepScriptEnvironment(
             parser.addErrorListener(errorHandler)
             this.context = parser.chunk()
         }
-        scope.implementFunctions(StandardLibrary.functions, this)
         return DeepScriptCompilationResult(errorHandler.exceptions, time)
     }
 
-    fun execute(): DeepScriptExecutionResult {
+    override fun execute(): DeepScriptExecutionResult {
         context?.let { context ->
             val visitor = Visitor(context, scope, stackTrace)
             stackTrace.stack(visitor)

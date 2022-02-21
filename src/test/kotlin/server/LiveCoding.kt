@@ -2,9 +2,9 @@ package server
 
 import NumberTest
 import com.sun.net.httpserver.HttpServer
-import io.deepn.script.DeepScriptEnvironment
+import io.deepn.script.DefaultExecutionEnvironment
 import io.deepn.script.logger.Logger
-import io.deepn.script.scope.Scope
+import io.deepn.script.scope.impl.BufferedScope
 import io.deepn.script.stdlib.Json.stringify
 import io.deepn.script.variables.function.LibraryVariable
 import io.deepn.script.variables.function.NativeFunctionVariable
@@ -36,8 +36,8 @@ fun main() {
                 it.sendResponseHeaders(204, -1)
                 return@createContext
             }
-            val scope = Scope()
-            val interpreter = DeepScriptEnvironment(
+            val scope = BufferedScope()
+            val interpreter = DefaultExecutionEnvironment(
                 String(it.requestBody.readAllBytes()),
                 scope,
                 logger = object : Logger {
@@ -90,7 +90,7 @@ fun main() {
 
                 resultBuilder.append("\n").append(IntRange(0, 20).joinToString(" ") { "#" }).append("\n")
 
-                scope.variables.forEach { (key, value) ->
+                scope.getVariables().forEach { (key, value) ->
                     if (value !is LibraryVariable && value !is NativeFunctionVariable) {
                         resultBuilder.append("\t")
                         if (value is ObjectVariable)

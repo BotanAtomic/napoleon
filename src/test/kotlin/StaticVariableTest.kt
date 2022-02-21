@@ -10,7 +10,10 @@ class StaticVariableTest {
             a += 1
             return a
         """.trimIndent(), 4, 4)
+    }
 
+    @Test
+    fun `duplicate static init`() {
         scriptAssertThrowable("""
             static a = 0
             static a = 2

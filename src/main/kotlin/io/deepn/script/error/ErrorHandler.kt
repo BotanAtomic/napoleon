@@ -112,16 +112,16 @@ class DeepScriptStrategyHandler : DefaultErrorStrategy() {
     }
 
     override fun reportUnwantedToken(recognizer: Parser) {
-        if (inErrorRecoveryMode(recognizer)) {
+        if (inErrorRecoveryMode(recognizer))
             return
-        }
+
         beginErrorCondition(recognizer)
-        val t = recognizer.currentToken
-        val tokenName = getTokenErrorDisplay(t)
+        val token = recognizer.currentToken
+        val tokenName = getTokenErrorDisplay(token)
         val expecting = getExpectedTokens(recognizer)
-        val msg = "extraneous input " + tokenName + " expecting " +
+        val message = "extraneous input " + tokenName + " expecting " +
                 expecting.toString(recognizer.vocabulary)
-        recognizer.notifyErrorListeners(t, msg, InputMismatchException(recognizer))
+        recognizer.notifyErrorListeners(token, message, InputMismatchException(recognizer))
     }
 
 }

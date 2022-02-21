@@ -1,4 +1,4 @@
-import io.deepn.script.DeepScriptEnvironment
+import io.deepn.script.DefaultExecutionEnvironment
 import io.deepn.script.error.DeepScriptError
 import io.deepn.script.error.SyntaxErrorEnum
 import io.deepn.script.variables.Null
@@ -23,7 +23,7 @@ private fun compare(aVariable: Variable<*>?, b: Any?): Boolean {
 
 
 fun scriptAssert(code: String, value: Any?, numberOfExecution: Int = 1) {
-    val compiler = DeepScriptEnvironment(code)
+    val compiler = DefaultExecutionEnvironment(code)
 
     val (grammarErrors, compilationTime, compilationSuccess) = compiler.compile()
 
@@ -31,7 +31,10 @@ fun scriptAssert(code: String, value: Any?, numberOfExecution: Int = 1) {
         throw Error("Compilation failed (${compilationTime}ms) : $grammarErrors")
 
     for (i in 0 until numberOfExecution - 1) {
-        compiler.execute()
+        compiler.execute().let {
+            if (!it.success)
+                throw Error("Execution failed (${it.time}ms): ${it.error}")
+        }
     }
 
     val (error, executionTime, variable, success) = compiler.execute()
@@ -60,7 +63,7 @@ fun scriptAssert(code: String, value: Any?, numberOfExecution: Int = 1) {
 }
 
 fun scriptAssertThrowable(code: String, value: Any?, numberOfExecution: Int = 1) {
-    val compiler = DeepScriptEnvironment(code)
+    val compiler = DefaultExecutionEnvironment(code)
 
     val (grammarErrors, _, compilationSuccess) = compiler.compile()
 

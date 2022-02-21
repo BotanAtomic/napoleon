@@ -5,6 +5,7 @@ import io.deepn.script.error.StackTrace
 import io.deepn.script.error.SyntaxError
 import io.deepn.script.error.TypeError
 import io.deepn.script.scope.Scope
+import io.deepn.script.scope.VariableMap
 import io.deepn.script.variables.FunctionArguments
 import io.deepn.script.variables.FunctionParameters
 import io.deepn.script.variables.Variable
@@ -68,7 +69,7 @@ class LocalFunctionVariable(
     override fun call(arguments: FunctionArguments): Variable<*> {
         checkArguments(arguments, parameters)
 
-        val toInject = HashMap<String, Variable<*>>()
+        val toInject = VariableMap()
 
         arguments?.forEachIndexed { index, (key, value) ->
             val finalKey = key ?: parameters.keys.elementAt(index)
@@ -88,7 +89,7 @@ class LocalFunctionVariable(
                 )
         }
 
-        val newVisitor = Visitor(block, Scope(parentScope, toInject), stackTrace)
+        val newVisitor = Visitor(block, parentScope.createChildren(toInject), stackTrace)
         stackTrace.stack(newVisitor)
         val result = newVisitor.visit(block)
         stackTrace.pop()

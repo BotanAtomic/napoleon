@@ -1,7 +1,14 @@
 package io.deepn.script.stdlib
 
+import io.deepn.script.DefaultExecutionEnvironment
+import io.deepn.script.scope.VariableMap
+import io.deepn.script.variables.Variable
+import io.deepn.script.variables.function.LibraryVariable
+import io.deepn.script.variables.function.NativeFunctionVariable
+import io.deepn.script.variables.primitive.StringVariable
 import kotlin.reflect.KCallable
 import kotlin.reflect.KClass
+import kotlin.reflect.full.extensionReceiverParameter
 import kotlin.reflect.full.findAnnotation
 
 @Target(AnnotationTarget.VALUE_PARAMETER)
@@ -23,14 +30,17 @@ data class NativeFunction(
 
 object StandardLibrary {
 
-    val functions: MutableList<NativeFunction> = ArrayList()
+    private val functionExtensions: MutableMap<KClass<*>, MutableMap<String, NativeFunctionVariable>> = HashMap()
+
+    private val functions: MutableList<NativeFunction> = ArrayList()
 
     init {
-        load(IO::class)
-        load(Math::class)
-        load(Utils::class)
-        load(List::class)
-        load(Json::class)
+        listOf(IO, Math, Utils, List, Json).forEach { load(it::class) }
+    }
+
+
+    fun findFunctionExtension(variable: Variable<*>, index: StringVariable): Variable<*>? {
+        return functionExtensions[variable::class]?.get(index.value)?.createExtension(variable)
     }
 
     private fun load(libraryClass: KClass<*>) {
@@ -39,6 +49,23 @@ object StandardLibrary {
             val name = function.findAnnotation<FunctionName>()?.value ?: function.name
             NativeFunction(function, libraryClass.objectInstance, name, packageName)
         })
+    }
+
+    fun generateLibrary(environment: DefaultExecutionEnvironment): VariableMap {
+        val variables = VariableMap()
+        functions.forEach {
+            val extensionReceiverParameter = it.function.extensionReceiverParameter?.type?.classifier
+            val functionVariable = NativeFunctionVariable(it, environment)
+            if (extensionReceiverParameter is KClass<*>) {
+                functionExtensions.getOrPut(extensionReceiverParameter) { HashMap() }[it.name] = functionVariable
+            } else if (it.packageName == null) {
+                variables[it.name] = functionVariable
+            } else {
+                val packageVariable = variables.getOrPut(it.packageName) { LibraryVariable(it.packageName) }
+                packageVariable.setIndex(StringVariable(it.name), functionVariable)
+            }
+        }
+        return variables
     }
 
 }

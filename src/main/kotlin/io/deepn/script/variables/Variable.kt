@@ -1,7 +1,8 @@
 package io.deepn.script.variables
 
+import io.deepn.script.error.FunctionCallError
 import io.deepn.script.error.TypeError
-import io.deepn.script.scope.findFunctionExtension
+import io.deepn.script.stdlib.StandardLibrary.findFunctionExtension
 import io.deepn.script.variables.function.LocalFunctionVariable
 import io.deepn.script.variables.function.NativeFunctionVariable
 import io.deepn.script.variables.memory.IndexedVariable
@@ -111,7 +112,8 @@ abstract class Variable<T>(val value: T) {
     )
 
     fun getExtensionFunction(position: StringVariable): Variable<*> {
-        return findFunctionExtension(this, position)
+        return findFunctionExtension(this, position) ?:
+            throw FunctionCallError("'${type()}' has no function ${position.value}()")
     }
 
     open fun getIndex(position: Variable<*>): Variable<*> = throw TypeError(

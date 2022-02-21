@@ -13,7 +13,9 @@ import io.deepn.script.variables.primitive.StringVariable
 
 
 fun Visitor.resolveBaseVariable(
-    name: String?, expression: DeepScriptParser.ExpressionContext?, returnMemoryAddress: Boolean
+    name: String?,
+    expression: DeepScriptParser.ExpressionContext?,
+    returnMemoryAddress: Boolean
 ): Variable<*> {
     val baseVariable = if (name != null) scope.resolve(name, returnMemoryAddress)
     else visit(expression)
@@ -45,7 +47,8 @@ fun Visitor.variableCalls(
 
 
 fun Visitor.resolveVariables(
-    baseVariable: Variable<*>, variableSuffix: List<DeepScriptParser.VarSuffixContext>
+    baseVariable: Variable<*>,
+    variableSuffix: List<DeepScriptParser.VarSuffixContext>
 ): List<Variable<*>> {
 
     val variables = ArrayList<Variable<*>>()
