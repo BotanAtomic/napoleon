@@ -43,7 +43,7 @@ object StandardLibrary {
     private val constants: MutableList<NativeConstant> = ArrayList()
 
     init {
-        listOf(IO, Math, Utils, List, Json).forEach { load(it::class) }
+        listOf(IO, Math, Utils, List, Json, Http).forEach { load(it::class) }
     }
 
     fun findFunctionExtension(variable: Variable<*>, index: StringVariable): Variable<*>? {

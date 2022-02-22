@@ -397,9 +397,13 @@ class Visitor(
         )
     }
 
-    override fun visitExpressionCall(context: DeepScriptParser.ExpressionCallContext): Variable<*> {
-        val baseExpression = visit(context.expression())
-        val function = baseExpression.getExtensionFunction(StringVariable(context.NAME().text))
-        return variableCalls(function, listOf(context.args())).lastOrNull() ?: Null
+    override fun visitPrimitiveCall(context: DeepScriptParser.PrimitiveCallContext): Variable<*> {
+        val baseVariables = visit(context.callablePrimitives())
+        val variable = (resolveVariables(baseVariables, context.varSuffix()).lastOrNull() ?: Null).detach()
+
+        if(context.args().isEmpty())
+            return variable
+
+        return variableCalls(variable, context.args()).lastOrNull() ?: Null
     }
 }

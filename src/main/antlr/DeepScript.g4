@@ -98,6 +98,13 @@ expressionList
     : expression (',' expression)*
     ;
 
+callablePrimitives
+    : string
+    | bool
+    | jsonObject
+    | tableconstructor
+    ;
+
 expression
     : string                                                #stringExpression // do not parse here
     | number                                                #numberExpression // do not parse here
@@ -116,7 +123,7 @@ expression
     | 'null'                                                #nullExpression
     | jsonObject                                            #jsonExpression // do not parse here
     | 'function' (NAME (',' NAME)*)? '->' expression        #lambdaExpression
-    | expression  '.' NAME args                             #expressionCall
+    | callablePrimitives varSuffix*  args*                  #primitiveCall
     ;
 
 jsonPair
@@ -144,7 +151,7 @@ var_
     ;
 
 varSuffix
-    : args* ('[' expression ']' | '.' NAME)
+    : args* ('[' expression ']' | NEWLINE* '.' NAME)
     ;
 
 args

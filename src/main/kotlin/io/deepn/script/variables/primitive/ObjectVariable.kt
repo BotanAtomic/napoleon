@@ -5,7 +5,7 @@ import io.deepn.script.variables.Null
 import io.deepn.script.variables.Variable
 import io.deepn.script.variables.memory.MemoryAddressVariable
 
-class ObjectVariable : Variable<MutableMap<String, Variable<*>>>(HashMap()) {
+open class ObjectVariable : Variable<MutableMap<String, Variable<*>>>(HashMap()) {
 
     override fun type() = "object"
 
@@ -28,7 +28,12 @@ class ObjectVariable : Variable<MutableMap<String, Variable<*>>>(HashMap()) {
     override fun length(): IntegerVariable {
         return IntegerVariable(value.size)
     }
-    
+
+
+    operator fun get(key: String) : Variable<*> {
+        return value.getOrDefault(key, Null)
+    }
+
     operator fun set(key: String, value: Variable<*>) {
         super.value[key] = value
     }

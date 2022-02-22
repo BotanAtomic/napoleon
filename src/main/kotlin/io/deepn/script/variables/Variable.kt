@@ -25,7 +25,7 @@ object Void : Variable<Any>(Any()) {
 typealias FunctionParameters = LinkedHashMap<String, (() -> Variable<*>)?>
 typealias FunctionArguments = LinkedList<Pair<String?, Variable<*>>>?
 
-abstract class Variable<T>(val value: T) {
+abstract class Variable<T: Any>(val value: T) {
 
     var name: String? = null
 

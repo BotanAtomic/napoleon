@@ -18,11 +18,12 @@ dependencies {
     implementation(kotlin("reflect"))
 
     implementation("com.google.code.gson:gson:2.8.9")
+    implementation("com.github.kittinunf.fuel:fuel:2.3.1")
+    implementation("org.apache.commons:commons-text:1.9")
 
     antlr("org.antlr:antlr4:4.9.3")
     implementation("org.antlr:antlr4-runtime:4.9.3")
 
-    implementation("org.apache.commons:commons-text:1.9")
 
     testImplementation(platform("org.junit:junit-bom:5.7.0"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
