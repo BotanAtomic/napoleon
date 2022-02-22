@@ -115,7 +115,7 @@ fun main() {
     }
 
 
-    server.bind(InetSocketAddress(4999), 1)
+    server.bind(InetSocketAddress("0.0.0.0",4999), 1)
 
     println("http://localhost:4999/")
 

@@ -7,7 +7,7 @@ class JsonTest {
 
     @Test
     fun json() {
-        scriptAssertThrowable("""json = { "a": ok""", SyntaxErrorEnum.INPUT_MISMATCH)
+        scriptAssertThrowable("""json = { "a": ok""", SyntaxErrorEnum.NO_ALTERNATIVE)
         scriptAssert(
             """
             json = { a: "ok" }
