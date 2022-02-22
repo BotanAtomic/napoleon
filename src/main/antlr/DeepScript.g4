@@ -294,17 +294,9 @@ fragment
 HexDigit
     : [0-9a-fA-F]
     ;
-COMMENT
-    : '--[' NESTED_STR ']' -> channel(HIDDEN)
-    ;
+
 LINE_COMMENT
-    : '--'
-    (                                               // --
-    | '[' '='*                                      // --[==
-    | '[' '='* ~('='|'['|'\r'|'\n') ~('\r'|'\n')*   // --[==AA
-    | ~('['|'\r'|'\n') ~('\r'|'\n')*                // --AAA
-    ) ('\r\n'|'\r'|'\n'|EOF)
-    -> channel(HIDDEN)
+    : '#' ~[\r\n\f]* -> skip
     ;
 WS
     : [ \t\u000C]+ -> skip
