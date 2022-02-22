@@ -7,8 +7,8 @@ import com.github.kittinunf.fuel.core.Response
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.core.isSuccessful
 import io.deepn.script.error.ValueError
-import io.deepn.script.stdlib.Json.isJson
-import io.deepn.script.stdlib.Json.stringify
+import io.deepn.script.stdlib.JsonLibrary.isJson
+import io.deepn.script.stdlib.JsonLibrary.stringify
 import io.deepn.script.variables.Variable
 import io.deepn.script.variables.error.ErrorVariable
 import io.deepn.script.variables.primitive.*
@@ -56,7 +56,7 @@ fun request(
 }
 
 @Package("http")
-object Http {
+object HttpLibrary {
 
     fun get(url: StringVariable): Variable<*> = request(url) { url.value.httpGet() }
 

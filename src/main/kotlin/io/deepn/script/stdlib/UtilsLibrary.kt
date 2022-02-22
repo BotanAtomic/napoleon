@@ -7,7 +7,7 @@ import io.deepn.script.variables.error.ErrorVariable
 import io.deepn.script.variables.primitive.IntegerVariable
 import io.deepn.script.variables.primitive.StringVariable
 
-object Utils {
+object UtilsLibrary {
 
     fun len(variable: Variable<*>) = variable.length()
 

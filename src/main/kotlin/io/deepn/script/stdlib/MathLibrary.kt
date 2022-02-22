@@ -6,12 +6,11 @@ import io.deepn.script.variables.error.ErrorVariable
 import io.deepn.script.variables.primitive.FloatVariable
 import io.deepn.script.variables.primitive.IntegerVariable
 import io.deepn.script.variables.primitive.api.NumberVariable
-import kotlin.math.PI
 import kotlin.random.Random.Default.nextDouble
 import kotlin.random.Random.Default.nextLong
 
 @Package("math")
-object Math {
+object MathLibrary {
 
     val PI = FloatVariable(kotlin.math.PI)
 

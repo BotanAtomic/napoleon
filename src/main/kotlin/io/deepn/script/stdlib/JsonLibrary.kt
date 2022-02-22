@@ -7,7 +7,6 @@ import io.deepn.script.variables.Variable
 import io.deepn.script.variables.error.ErrorVariable
 import io.deepn.script.variables.primitive.*
 import java.math.BigDecimal
-import kotlin.collections.List
 
 val json: Gson = Gson().newBuilder().disableHtmlEscaping().create()
 val jsonPrettyPrint: Gson = Gson().newBuilder().disableHtmlEscaping().setPrettyPrinting().create()
@@ -92,7 +91,7 @@ fun parseJson(input: String): Variable<*> {
     return result.getOrNull()?.let { parseJsonElement(it) } ?: Null
 }
 
-object Json {
+object JsonLibrary {
 
 
     fun ObjectVariable.stringify(prettyPrint: BooleanVariable = BooleanVariable(false)) =

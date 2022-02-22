@@ -3,7 +3,7 @@ package io.deepn.script.stdlib
 import io.deepn.script.DefaultExecutionEnvironment
 import io.deepn.script.variables.Variable
 
-object IO {
+object IOLibrary {
 
     fun print(
         vararg variables: Variable<*>,

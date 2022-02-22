@@ -5,6 +5,7 @@ import io.deepn.script.Visitor
 import io.deepn.script.error.NameError
 import io.deepn.script.generated.DeepScriptParser
 import io.deepn.script.variables.FunctionArguments
+import io.deepn.script.variables.Null
 import io.deepn.script.variables.Variable
 import io.deepn.script.variables.Void
 import io.deepn.script.variables.function.LibraryVariable
@@ -83,4 +84,20 @@ fun Visitor.enterLoop(loop: () -> Unit) {
 
     if (status != Status.RETURN)
         status = Status.NORMAL
+}
+
+fun Visitor.parseCallableExpression(
+    baseVariable: Variable<*>,
+    variableSuffix: List<DeepScriptParser.VarSuffixContext>?,
+    arguments: List<DeepScriptParser.ArgsContext>?,
+): Variable<*> {
+    if (variableSuffix == null || variableSuffix.isEmpty())
+        return baseVariable
+
+    val variable = resolveVariables(baseVariable, variableSuffix).lastOrNull()?.detach() ?: Null
+
+    if (arguments == null || arguments.isEmpty())
+        return variable
+
+    return variableCalls(variable, arguments).lastOrNull() ?: Null
 }

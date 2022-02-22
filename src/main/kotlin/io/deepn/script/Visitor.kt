@@ -256,6 +256,10 @@ class Visitor(
         )
     )
 
+    override fun visitStringExpression(context: DeepScriptParser.StringExpressionContext): Variable<*> {
+        return parseCallableExpression(visitString(context.string()), context.varSuffix(), context.args())
+    }
+
     override fun visitBool(context: DeepScriptParser.BoolContext) = BooleanVariable(context.text.equals("true"))
 
     override fun visitOperatorPowerExpression(context: DeepScriptParser.OperatorPowerExpressionContext) =
@@ -331,6 +335,14 @@ class Visitor(
         context.fieldlist()?.expression()?.forEach { insert(visit(it)) }
     }
 
+    override fun visitTableconstructorExpression(context: DeepScriptParser.TableconstructorExpressionContext): Variable<*> {
+        return parseCallableExpression(
+            visitTableconstructor(context.tableconstructor()),
+            context.varSuffix(),
+            context.args()
+        )
+    }
+
     override fun visitNullExpression(context: DeepScriptParser.NullExpressionContext) = Null
 
     override fun visitPrefixexp(context: DeepScriptParser.PrefixexpContext): Variable<*> {
@@ -367,6 +379,10 @@ class Visitor(
         return json
     }
 
+    override fun visitJsonExpression(context: DeepScriptParser.JsonExpressionContext): Variable<*> {
+        return parseCallableExpression(visitJsonObject(context.jsonObject()), context.varSuffix(), context.args())
+    }
+
     override fun visitJsonPair(context: DeepScriptParser.JsonPairContext): PairVariable<StringVariable, Variable<*>> {
         val name: StringVariable = when {
             context.string() != null -> visitString(context.string())
@@ -397,13 +413,4 @@ class Visitor(
         )
     }
 
-    override fun visitPrimitiveCall(context: DeepScriptParser.PrimitiveCallContext): Variable<*> {
-        val baseVariables = visit(context.callablePrimitives())
-        val variable = (resolveVariables(baseVariables, context.varSuffix()).lastOrNull() ?: Null).detach()
-
-        if(context.args().isEmpty())
-            return variable
-
-        return variableCalls(variable, context.args()).lastOrNull() ?: Null
-    }
 }

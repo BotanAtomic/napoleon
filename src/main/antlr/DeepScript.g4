@@ -98,20 +98,13 @@ expressionList
     : expression (',' expression)*
     ;
 
-callablePrimitives
-    : string
-    | bool
-    | jsonObject
-    | tableconstructor
-    ;
-
 expression
-    : string                                                #stringExpression // do not parse here
+    : string varSuffix* args*                               #stringExpression // do not parse here
     | number                                                #numberExpression // do not parse here
     | bool                                                  #boolExpression // do not parse here
     | prefixexp                                             #prefixexpExpression // do not parse here
     | functionCall                                          #fc
-    | tableconstructor                                      #tableconstructorExpression // do not parse here
+    | tableconstructor varSuffix* args*                     #tableconstructorExpression // do not parse here
     | <assoc=right> expression operatorPower expression     #operatorPowerExpression
     | operatorUnary expression                              #operatorUnaryExpression
     | expression operatorMulDivMod expression               #operatorMulDivModExpression
@@ -121,9 +114,8 @@ expression
     | expression operatorOr expression                      #operatorOrExpression
     | expression operatorBitwise expression                 #operatorBitwiseExpression
     | 'null'                                                #nullExpression
-    | jsonObject                                            #jsonExpression // do not parse here
+    | jsonObject varSuffix* args*                           #jsonExpression // do not parse here
     | 'function' (NAME (',' NAME)*)? '->' expression        #lambdaExpression
-    | callablePrimitives varSuffix*  args*                  #primitiveCall
     ;
 
 jsonPair

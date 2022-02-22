@@ -2,8 +2,6 @@ package io.deepn.script.stdlib
 
 import io.deepn.script.error.DeepScriptError
 import io.deepn.script.error.TypeError
-import io.deepn.script.stdlib.List.distinct
-import io.deepn.script.stdlib.List.extends
 import io.deepn.script.utils.createFunctionArguments
 import io.deepn.script.variables.Null
 import io.deepn.script.variables.Variable
@@ -16,7 +14,7 @@ import io.deepn.script.variables.primitive.ListVariable
 import kotlin.math.absoluteValue
 import kotlin.math.sign
 
-object List {
+object ListLibrary {
 
     fun ListVariable.append(variable: Variable<*>) = this.insert(variable)
 

@@ -1,6 +1,6 @@
 package io.deepn.script.variables.primitive
 
-import io.deepn.script.stdlib.Json.stringify
+import io.deepn.script.stdlib.JsonLibrary.stringify
 import io.deepn.script.variables.Null
 import io.deepn.script.variables.Variable
 import io.deepn.script.variables.memory.MemoryAddressVariable

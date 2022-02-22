@@ -69482,7 +69482,7 @@
         var h = function () {
             var e = Object(o.useState)(localStorage.getItem("code") || ""), t = Object(r.a)(e, 2), n = t[0], i = t[1],
                 a = Object(o.useState)(""), s = Object(r.a)(a, 2), l = s[0], h = s[1], p = function () {
-                    var host = window.location.host + ":" + (window.location.port || 80);
+                    var host = window.location.host;
                     localStorage.setItem("code", n), d.a.post("http://" + host + "/execute", n).then((function (e) {
                         h(e.data)
                     })).catch((function (e) {

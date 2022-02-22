@@ -137,12 +137,6 @@ public interface DeepScriptVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitExpressionList(DeepScriptParser.ExpressionListContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link DeepScriptParser#callablePrimitives}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitCallablePrimitives(DeepScriptParser.CallablePrimitivesContext ctx);
-	/**
 	 * Visit a parse tree produced by the {@code tableconstructorExpression}
 	 * labeled alternative in {@link DeepScriptParser#expression}.
 	 * @param ctx the parse tree
@@ -226,13 +220,6 @@ public interface DeepScriptVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitPrefixexpExpression(DeepScriptParser.PrefixexpExpressionContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code primitiveCall}
-	 * labeled alternative in {@link DeepScriptParser#expression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitPrimitiveCall(DeepScriptParser.PrimitiveCallContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code operatorComparisonExpression}
 	 * labeled alternative in {@link DeepScriptParser#expression}.
