@@ -249,6 +249,13 @@ public interface DeepScriptVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitNullExpression(DeepScriptParser.NullExpressionContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code strategyFunctionExpression}
+	 * labeled alternative in {@link DeepScriptParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitStrategyFunctionExpression(DeepScriptParser.StrategyFunctionExpressionContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code fc}
 	 * labeled alternative in {@link DeepScriptParser#expression}.
 	 * @param ctx the parse tree
@@ -297,6 +304,18 @@ public interface DeepScriptVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitVarSuffix(DeepScriptParser.VarSuffixContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link DeepScriptParser#mendatoryNamedExpressionList}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitMendatoryNamedExpressionList(DeepScriptParser.MendatoryNamedExpressionListContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link DeepScriptParser#mendatoryNamedExpression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitMendatoryNamedExpression(DeepScriptParser.MendatoryNamedExpressionContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link DeepScriptParser#args}.
 	 * @param ctx the parse tree

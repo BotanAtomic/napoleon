@@ -116,6 +116,7 @@ expression
     | 'null'                                                #nullExpression
     | jsonObject varSuffix* args*                           #jsonExpression // do not parse here
     | 'function' (NAME (',' NAME)*)? '->' expression        #lambdaExpression
+    | '@' NAME '(' mendatoryNamedExpressionList? ')'        #strategyFunctionExpression
     ;
 
 jsonPair
@@ -144,6 +145,14 @@ var_
 
 varSuffix
     : args* ('[' expression ']' | NEWLINE* '.' NAME)
+    ;
+
+mendatoryNamedExpressionList
+    : mendatoryNamedExpression (',' mendatoryNamedExpression)*
+    ;
+
+mendatoryNamedExpression
+    : NAME '='  expression
     ;
 
 args

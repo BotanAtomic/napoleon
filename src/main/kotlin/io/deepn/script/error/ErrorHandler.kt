@@ -92,7 +92,7 @@ class DeepScriptErrorHandler : BaseErrorListener() {
     }
 }
 
-class DeepScriptStrategyHandler : DefaultErrorStrategy() {
+class DeepScriptErrorStrategyHandler : DefaultErrorStrategy() {
 
     override fun reportMissingToken(recognizer: Parser) {
         if (inErrorRecoveryMode(recognizer)) return

@@ -7,6 +7,7 @@ import io.deepn.script.error.TypeError
 import io.deepn.script.generated.DeepScriptBaseVisitor
 import io.deepn.script.generated.DeepScriptParser
 import io.deepn.script.scope.Scope
+import io.deepn.script.strategy.StrategyHandler
 import io.deepn.script.utils.*
 import io.deepn.script.variables.FunctionParameters
 import io.deepn.script.variables.Null
@@ -29,7 +30,8 @@ enum class Status {
 class Visitor(
     initialContext: ParserRuleContext,
     val scope: Scope,
-    private val stackTrace: StackTrace,
+    val stackTrace: StackTrace,
+    val strategyHandler: StrategyHandler,
 ) : DeepScriptBaseVisitor<Variable<*>>() {
 
     var status = Status.NORMAL
@@ -227,13 +229,9 @@ class Visitor(
             }
         }
         scope.assign(
-            context.NAME().text, LocalFunctionVariable(
-                context.NAME().text,
-                scope,
-                parameters,
-                context.funcbody().block(),
-                stackTrace
-            )
+            context.NAME().text, LocalFunctionVariable(context.NAME().text, parameters) {
+                executeContext(it, context.funcbody().block())
+            }
         )
         return Void
     }
@@ -404,13 +402,15 @@ class Visitor(
             if (parameters.contains(key)) throw SyntaxError("duplicate argument '${key}' in function definition")
             parameters[key] = null
         }
-        return LocalFunctionVariable(
-            "lambda",
-            scope,
-            parameters,
-            context.expression(),
-            stackTrace
-        )
+        return LocalFunctionVariable("lambda", parameters) {
+            executeContext(it, context.expression())
+        }
     }
+
+    override fun visitStrategyFunctionExpression(context: DeepScriptParser.StrategyFunctionExpressionContext): Variable<*> {
+        return strategyHandler.call(context.NAME().text, context.mendatoryNamedExpressionList()
+            ?.mendatoryNamedExpression()?.associate { it.NAME().text to visit(it.expression()) } ?: emptyMap())
+    }
+
 
 }

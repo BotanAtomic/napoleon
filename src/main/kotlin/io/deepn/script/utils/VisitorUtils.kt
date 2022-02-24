@@ -4,6 +4,7 @@ import io.deepn.script.Status
 import io.deepn.script.Visitor
 import io.deepn.script.error.NameError
 import io.deepn.script.generated.DeepScriptParser
+import io.deepn.script.scope.VariableMap
 import io.deepn.script.variables.FunctionArguments
 import io.deepn.script.variables.Null
 import io.deepn.script.variables.Variable
@@ -11,6 +12,7 @@ import io.deepn.script.variables.Void
 import io.deepn.script.variables.function.LibraryVariable
 import io.deepn.script.variables.memory.IndexedVariable
 import io.deepn.script.variables.primitive.StringVariable
+import org.antlr.v4.runtime.ParserRuleContext
 
 
 fun Visitor.resolveBaseVariable(
@@ -27,7 +29,8 @@ fun Visitor.resolveBaseVariable(
 }
 
 fun Visitor.variableCalls(
-    baseVariable: Variable<*>, argumentsContext: List<DeepScriptParser.ArgsContext>
+    baseVariable: Variable<*>,
+    argumentsContext: List<DeepScriptParser.ArgsContext>
 ): List<Variable<*>> {
     val variables = ArrayList<Variable<*>>()
 
@@ -100,4 +103,12 @@ fun Visitor.parseCallableExpression(
         return variable
 
     return variableCalls(variable, arguments).lastOrNull() ?: Null
+}
+
+fun Visitor.executeContext(variables:  VariableMap, context: ParserRuleContext): Variable<*> {
+    val newVisitor = Visitor(context, scope.createChildren(variables), stackTrace, strategyHandler)
+    stackTrace.stack(newVisitor)
+    val result = newVisitor.visit(context)
+    stackTrace.pop()
+    return result
 }

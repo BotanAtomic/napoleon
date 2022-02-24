@@ -8,6 +8,8 @@ import io.deepn.script.logger.SYSTEM_LOGGER
 import io.deepn.script.scope.Scope
 import io.deepn.script.scope.impl.BufferedScope
 import io.deepn.script.stdlib.StandardLibrary
+import io.deepn.script.strategy.EmptyStrategyHandler
+import io.deepn.script.strategy.StrategyHandler
 import io.deepn.script.variables.Variable
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
@@ -37,7 +39,8 @@ interface ExecutionEnvironment {
 class DefaultExecutionEnvironment(
     private val source: String,
     val scope: Scope = BufferedScope(),
-    val logger: Logger = SYSTEM_LOGGER
+    val logger: Logger = SYSTEM_LOGGER,
+    private val strategyHandler: StrategyHandler = EmptyStrategyHandler()
 ) : ExecutionEnvironment {
 
     private val stackTrace = StackTrace()
@@ -58,7 +61,7 @@ class DefaultExecutionEnvironment(
             lexer.errorListeners.clear()
             lexer.addErrorListener(errorHandler)
             val parser = DeepScriptParser(CommonTokenStream(lexer))
-            parser.errorHandler = DeepScriptStrategyHandler()
+            parser.errorHandler = DeepScriptErrorStrategyHandler()
             parser.errorListeners.clear()
             parser.addErrorListener(errorHandler)
             this.context = parser.chunk()
@@ -68,7 +71,7 @@ class DefaultExecutionEnvironment(
 
     override fun execute(): DeepScriptExecutionResult {
         context?.let { context ->
-            val visitor = Visitor(context, scope, stackTrace)
+            val visitor = Visitor(context, scope, stackTrace, strategyHandler)
             stackTrace.stack(visitor)
             var returnedVariable: Variable<*>? = null
             var error: DeepScriptError? = null

@@ -54,10 +54,8 @@ private fun LocalFunctionVariable.checkArguments(arguments: FunctionArguments, p
 
 class LocalFunctionVariable(
     val functionName: String,
-    private val parentScope: Scope,
     private val parameters: FunctionParameters,
-    private val block: ParserRuleContext,
-    private val stackTrace: StackTrace,
+    val onExecute: (VariableMap) -> Variable<*>
 ) : Variable<Any>(Any()) {
 
     init {
@@ -89,11 +87,7 @@ class LocalFunctionVariable(
                 )
         }
 
-        val newVisitor = Visitor(block, parentScope.createChildren(toInject), stackTrace)
-        stackTrace.stack(newVisitor)
-        val result = newVisitor.visit(block)
-        stackTrace.pop()
-        return result
+        return onExecute(toInject)
     }
 
     override fun valueToString(): String {
