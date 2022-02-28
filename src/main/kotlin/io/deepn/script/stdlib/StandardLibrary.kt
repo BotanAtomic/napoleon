@@ -50,7 +50,9 @@ object StandardLibrary {
             ListLibrary,
             JsonLibrary,
             HttpLibrary,
-            StringLibrary).forEach { load(it::class) }
+            StringLibrary,
+            Date
+        ).forEach { load(it::class) }
     }
 
     fun findFunctionExtension(variable: Variable<*>, index: StringVariable): Variable<*>? {

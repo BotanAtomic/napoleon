@@ -1,6 +1,8 @@
 package io.deepn.script.utils
 
 import io.deepn.script.error.DeepScriptError
+import io.deepn.script.error.ValueError
+import io.deepn.script.variables.Null
 import io.deepn.script.variables.Variable
 import io.deepn.script.variables.error.ErrorVariable
 import io.deepn.script.variables.memory.IndexedVariable
@@ -55,3 +57,11 @@ fun Boolean.toProducer(producer: () -> Variable<*>): (() -> Variable<*>)? {
 
 fun DeepScriptError.toError() = ErrorVariable(this)
 
+fun runOrValueError(unit: () -> Variable<*>): Variable<*> {
+    val result = runCatching(unit)
+
+    return if (result.isSuccess)
+        result.getOrNull() ?: Null
+    else
+        ErrorVariable(ValueError(result.exceptionOrNull()?.message ?: "unknown error"))
+}
