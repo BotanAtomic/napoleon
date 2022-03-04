@@ -1,5 +1,7 @@
 package io.deepn.script.variables.primitive
 
+import io.deepn.script.error.IndexError
+import io.deepn.script.error.TypeError
 import io.deepn.script.variables.Variable
 
 class StringVariable(initialValue: String) : Variable<String>(initialValue) {
@@ -53,6 +55,17 @@ class StringVariable(initialValue: String) : Variable<String>(initialValue) {
                 return StringVariable(primaryIterator.next().toString())
             }
         }
+    }
+
+    override fun getIndex(position: Variable<*>): Variable<*> {
+        if (position is IntegerVariable) {
+            val index = position.value.toInt()
+            if (index < 0 || index >= value.length)
+                throw IndexError("string index out of range: index=${index}, size=${value.length}")
+
+            return StringVariable(value[index].toString())
+        }
+        throw TypeError("string index must be integer, not '${position.type()}'")
     }
 
     override fun length(): IntegerVariable {
