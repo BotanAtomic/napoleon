@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm") version "1.6.10"
     antlr
+    `maven-publish`
 }
 
 group = "io.deepn"
@@ -17,7 +18,7 @@ dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation(kotlin("reflect"))
 
-    implementation("com.google.code.gson:gson:2.8.9")
+    implementation("com.google.code.gson:gson:2.9.0")
     implementation("com.github.kittinunf.fuel:fuel:2.3.1")
     implementation("org.apache.commons:commons-text:1.9")
 
@@ -57,3 +58,29 @@ tasks.withType<JavaCompile> {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+publishing {
+
+    repositories {
+        maven {
+            url = uri("https://gitlab.com/api/v4/projects/33324702/packages/maven")
+            name = "GitLab"
+            credentials(HttpHeaderCredentials::class) {
+                name = "Private-Token"
+                value = System.getenv("MAVEN_GITLAB_TOKEN")
+            }
+
+            authentication {
+                create<HttpHeaderAuthentication>("header")
+            }
+        }
+    }
+
+    publications {
+        create<MavenPublication>("maven") {
+            from(components["kotlin"])
+            artifact(tasks.kotlinSourcesJar)
+        }
+    }
+}
+

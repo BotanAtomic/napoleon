@@ -1,0 +1,34 @@
+image: openjdk:17-jdk
+
+.only-main:
+  only:
+    - main
+
+.only-main-and-develop:
+  only:
+    - main
+    - develop
+
+before_script:
+  - export GRADLE_USER_HOME=`pwd`/.gradle
+
+cache:
+  paths:
+    - .gradle/wrapper
+    - .gradle/caches
+
+stages:
+  - build
+  - publish
+
+build:
+  extends: .only-main-and-develop
+  stage: build
+  script:
+    - ./gradlew clean build
+
+publish:
+  extends: .only-main
+  stage: publish
+  script:
+    - ./gradlew publish
