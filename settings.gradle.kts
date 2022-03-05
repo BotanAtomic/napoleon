@@ -1,2 +1,2 @@
-rootProject.name = "deep-script-v2"
+rootProject.name = "flow"
 

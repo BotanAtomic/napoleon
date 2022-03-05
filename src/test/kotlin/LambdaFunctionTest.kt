@@ -1,4 +1,4 @@
-import io.deepn.script.error.TypeError
+import io.deepn.flow.error.TypeError
 import org.junit.jupiter.api.Test
 
 class LambdaFunctionTest {

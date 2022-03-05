@@ -1,9 +1,9 @@
-import io.deepn.script.DefaultExecutionEnvironment
-import io.deepn.script.error.DeepScriptError
-import io.deepn.script.error.SyntaxErrorEnum
-import io.deepn.script.variables.Null
-import io.deepn.script.variables.Variable
-import io.deepn.script.variables.memory.MemoryAddressVariable
+import io.deepn.flow.DefaultExecutionEnvironment
+import io.deepn.flow.error.FlowError
+import io.deepn.flow.error.SyntaxErrorEnum
+import io.deepn.flow.variables.Null
+import io.deepn.flow.variables.Variable
+import io.deepn.flow.variables.memory.MemoryAddressVariable
 import kotlin.reflect.KClass
 
 private fun compare(aVariable: Variable<*>?, b: Any?): Boolean {
@@ -97,7 +97,7 @@ fun scriptAssertThrowable(code: String, value: Any?, numberOfExecution: Int = 1)
     if (!success) {
         return when (value) {
             is String -> assert(error?.type == value) { "value is $value, expected ${error?.type}" }
-            is DeepScriptError -> assert(error?.type == value.javaClass.simpleName) { "value is $value, expected ${error?.type}" }
+            is FlowError -> assert(error?.type == value.javaClass.simpleName) { "value is $value, expected ${error?.type}" }
             is KClass<*> -> assert(error?.type == value.java.simpleName) { "value is $value, expected ${error?.type}" }
             else -> throw Error("Execution: Unsupported value $value")
         }

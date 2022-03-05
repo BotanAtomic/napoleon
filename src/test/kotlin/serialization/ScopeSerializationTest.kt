@@ -1,12 +1,12 @@
 package serialization
 
-import io.deepn.script.DefaultExecutionEnvironment
-import io.deepn.script.scope.VariableMap
-import io.deepn.script.scope.impl.BufferedScope
-import io.deepn.script.serialization.deserializeScope
-import io.deepn.script.serialization.serializeScope
-import io.deepn.script.variables.primitive.IntegerVariable
-import io.deepn.script.variables.primitive.StringVariable
+import io.deepn.flow.DefaultExecutionEnvironment
+import io.deepn.flow.scope.VariableMap
+import io.deepn.flow.scope.impl.BufferedScope
+import io.deepn.flow.serialization.deserializeScope
+import io.deepn.flow.serialization.serializeScope
+import io.deepn.flow.variables.primitive.IntegerVariable
+import io.deepn.flow.variables.primitive.StringVariable
 import org.junit.jupiter.api.Test
 import java.nio.file.Files
 import java.nio.file.Paths

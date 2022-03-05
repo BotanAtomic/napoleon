@@ -1,4 +1,4 @@
-import io.deepn.script.error.NameError
+import io.deepn.flow.error.NameError
 import org.junit.jupiter.api.Test
 
 class AssignmentOperatorTest {

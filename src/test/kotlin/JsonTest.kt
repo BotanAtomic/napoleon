@@ -1,6 +1,6 @@
-import io.deepn.script.error.SyntaxErrorEnum
-import io.deepn.script.variables.Null
-import io.deepn.script.variables.Variable
+import io.deepn.flow.error.SyntaxErrorEnum
+import io.deepn.flow.variables.Null
+import io.deepn.flow.variables.Variable
 import org.junit.jupiter.api.Test
 
 class JsonTest {

@@ -32,7 +32,7 @@ dependencies {
 
 tasks.generateGrammarSource {
     maxHeapSize = "64m"
-    val packageName = "io.deepn.script.generated"
+    val packageName = "io.deepn.flow.generated"
     arguments = listOf(
         "-Dlanguage=Java",
         "-package", packageName,

@@ -1,6 +1,6 @@
 package benchmark
 
-import io.deepn.script.DefaultExecutionEnvironment
+import io.deepn.flow.DefaultExecutionEnvironment
 import kotlin.math.pow
 import kotlin.system.measureTimeMillis
 
@@ -30,7 +30,7 @@ fun `simple loop`() {
             for (i in 0..100000)
                 it.execute()
         }
-        println("DeepScript time: $time ms")
+        println("Flow time: $time ms")
     }
 
 

@@ -2,13 +2,13 @@ package server
 
 import NumberTest
 import com.sun.net.httpserver.HttpServer
-import io.deepn.script.DefaultExecutionEnvironment
-import io.deepn.script.logger.Logger
-import io.deepn.script.scope.impl.BufferedScope
-import io.deepn.script.stdlib.JsonLibrary.stringify
-import io.deepn.script.variables.function.LibraryVariable
-import io.deepn.script.variables.function.NativeFunctionVariable
-import io.deepn.script.variables.primitive.ObjectVariable
+import io.deepn.flow.DefaultExecutionEnvironment
+import io.deepn.flow.logger.Logger
+import io.deepn.flow.scope.impl.BufferedScope
+import io.deepn.flow.stdlib.JsonLibrary.stringify
+import io.deepn.flow.variables.function.LibraryVariable
+import io.deepn.flow.variables.function.NativeFunctionVariable
+import io.deepn.flow.variables.primitive.ObjectVariable
 import java.io.File
 import java.net.InetSocketAddress
 
