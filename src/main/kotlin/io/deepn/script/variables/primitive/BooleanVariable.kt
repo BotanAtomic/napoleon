@@ -31,4 +31,6 @@ class BooleanVariable(initialValue: Boolean) : Variable<Boolean>(initialValue) {
     override fun toBoolean(): BooleanVariable {
         return this
     }
+
+    override fun isSerializable() = true
 }

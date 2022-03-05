@@ -3,12 +3,15 @@ package io.deepn.script.variables
 import io.deepn.script.error.FunctionCallError
 import io.deepn.script.error.TypeError
 import io.deepn.script.stdlib.StandardLibrary.findFunctionExtension
+import io.deepn.script.variables.date.DateTimeVariable
+import io.deepn.script.variables.date.DateVariable
+import io.deepn.script.variables.date.DurationVariable
+import io.deepn.script.variables.date.TimeVariable
 import io.deepn.script.variables.function.LocalFunctionVariable
 import io.deepn.script.variables.function.NativeFunctionVariable
 import io.deepn.script.variables.memory.IndexedVariable
 import io.deepn.script.variables.primitive.*
-import java.util.LinkedList
-import kotlin.collections.LinkedHashMap
+import java.util.*
 
 object Null : Variable<Any>(Any()) {
     override fun type() = "null"
@@ -25,7 +28,7 @@ object Void : Variable<Any>(Any()) {
 typealias FunctionParameters = LinkedHashMap<String, (() -> Variable<*>)?>
 typealias FunctionArguments = LinkedList<Pair<String?, Variable<*>>>?
 
-abstract class Variable<T: Any>(val value: T) {
+abstract class Variable<T : Any>(val value: T) {
 
     var name: String? = null
 
@@ -112,8 +115,8 @@ abstract class Variable<T: Any>(val value: T) {
     )
 
     fun getExtensionFunction(position: StringVariable): Variable<*> {
-        return findFunctionExtension(this, position) ?:
-            throw FunctionCallError("'${type()}' has no function ${position.value}()")
+        return findFunctionExtension(this, position)
+            ?: throw FunctionCallError("'${type()}' has no function ${position.value}()")
     }
 
     open fun getIndex(position: Variable<*>): Variable<*> = throw TypeError(
@@ -145,6 +148,8 @@ abstract class Variable<T: Any>(val value: T) {
     override fun toString(): String {
         return "Variable(value='${valueToString()}', type='${type()}', name=${name})"
     }
+
+    open fun isSerializable(): Boolean = false
 }
 
 fun classToType(variableClass: Any?) = when (variableClass) {
@@ -153,9 +158,15 @@ fun classToType(variableClass: Any?) = when (variableClass) {
     IndexedVariable::class -> "index"
     BooleanVariable::class -> "boolean"
     FloatVariable::class -> "float"
-    IntegerVariable::class -> "int"
+    IntegerVariable::class -> "integer"
     ListVariable::class -> "list"
     ObjectVariable::class -> "object"
     StringVariable::class -> "string"
-    else -> "null"
+    Null::class -> "null"
+    Void::class -> "void"
+    DateTimeVariable::class -> "date_time"
+    DateVariable::class -> "date"
+    TimeVariable::class -> "time"
+    DurationVariable::class -> "duration"
+    else -> "unknown"
 }

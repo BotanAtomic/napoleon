@@ -9,6 +9,7 @@ import com.github.kittinunf.fuel.core.isSuccessful
 import io.deepn.script.error.ValueError
 import io.deepn.script.stdlib.JsonLibrary.isJson
 import io.deepn.script.stdlib.JsonLibrary.stringify
+import io.deepn.script.utils.parseJson
 import io.deepn.script.variables.Variable
 import io.deepn.script.variables.error.ErrorVariable
 import io.deepn.script.variables.primitive.*
@@ -19,6 +20,7 @@ class HttpRequestVariable(private val request: Request) : Variable<Request>(requ
 
 }
 
+//TODO : create functions instead
 class HttpResponseVariable(response: Response, exception: FuelError?) : ObjectVariable() {
 
     override fun type(): String = "HttpResponse"

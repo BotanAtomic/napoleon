@@ -174,4 +174,7 @@ class IntegerVariable : Variable<Long>, NumberVariable {
     override fun toFloat() = value.toFloat()
 
     override fun toDouble() = value.toDouble()
+
+    override fun isSerializable() = true
+
 }

@@ -75,4 +75,6 @@ class ListVariable(
     override fun length(): IntegerVariable {
         return IntegerVariable(value.size)
     }
+
+    override fun isSerializable() = true
 }

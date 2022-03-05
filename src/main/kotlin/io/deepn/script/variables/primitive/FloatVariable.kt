@@ -129,4 +129,7 @@ class FloatVariable : Variable<Double>, NumberVariable {
     override fun toFloat() = value.toFloat()
 
     override fun toDouble() = value
+
+    override fun isSerializable() = true
+
 }

@@ -1,16 +1,11 @@
 package io.deepn.script.variables.function
 
-import io.deepn.script.Visitor
-import io.deepn.script.error.StackTrace
 import io.deepn.script.error.SyntaxError
 import io.deepn.script.error.TypeError
-import io.deepn.script.scope.Scope
 import io.deepn.script.scope.VariableMap
 import io.deepn.script.variables.FunctionArguments
 import io.deepn.script.variables.FunctionParameters
 import io.deepn.script.variables.Variable
-import org.antlr.v4.runtime.ParserRuleContext
-
 
 private fun checkParameters(parameters: FunctionParameters) {
     if (parameters.isEmpty()) return

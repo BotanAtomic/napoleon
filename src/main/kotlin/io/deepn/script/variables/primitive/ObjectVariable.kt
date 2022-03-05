@@ -1,11 +1,14 @@
 package io.deepn.script.variables.primitive
 
+import io.deepn.script.scope.VariableMap
 import io.deepn.script.stdlib.JsonLibrary.stringify
 import io.deepn.script.variables.Null
 import io.deepn.script.variables.Variable
 import io.deepn.script.variables.memory.MemoryAddressVariable
 
-open class ObjectVariable : Variable<MutableMap<String, Variable<*>>>(HashMap()) {
+open class ObjectVariable(
+    defaultValues: VariableMap? = null
+) : Variable<VariableMap>(defaultValues ?: VariableMap()) {
 
     override fun type() = "object"
 
@@ -30,7 +33,7 @@ open class ObjectVariable : Variable<MutableMap<String, Variable<*>>>(HashMap())
     }
 
 
-    operator fun get(key: String) : Variable<*> {
+    operator fun get(key: String): Variable<*> {
         return value.getOrDefault(key, Null)
     }
 
@@ -39,5 +42,7 @@ open class ObjectVariable : Variable<MutableMap<String, Variable<*>>>(HashMap())
     }
 
     override fun valueToString() = this.stringify(BooleanVariable(true)).value
+
+    override fun isSerializable() = true
 
 }

@@ -8,24 +8,26 @@ import io.deepn.script.variables.Void
 import io.deepn.script.variables.memory.MemoryAddressVariable
 import io.deepn.script.variables.primitive.IntegerVariable
 
-class BufferedScope(
+private fun createDefaultVariables(initialVariables: VariableMap?, version: Int) = VariableMap().apply {
+    if (initialVariables != null)
+        putAll(initialVariables)
+    put("version", IntegerVariable(version))
+}
+
+open class BufferedScope(
     private val parent: Scope? = null,
-    private val initialVariables: VariableMap? = null,
-    private val maximumSnapshot: Int = 500
-) : Scope {
-
-    private val protectedNames = HashSet<String>()
-    private val staticVersions = HashMap<String, Int>()
-
-    private var version = 0
-
-    private val staticVariables = VariableMap()
-
-    private var library: VariableMap? = null
-
-    private val variables = Array(maximumSnapshot) {
-        createDefaultVariables(it)
+    val initialVariables: VariableMap? = null,
+    val maximumSnapshot: Int = 500,
+    val protectedNames: HashSet<String> = HashSet(),
+    val staticVersions: HashMap<String, Int> = HashMap(),
+    val staticVariables: VariableMap = VariableMap(),
+    val variables: Array<VariableMap> = Array(maximumSnapshot) {
+        createDefaultVariables(initialVariables, it)
     }
+) : Scope, java.io.Serializable {
+
+    var version = 0
+    private var library: VariableMap? = null
 
     init {
         initialVariables?.keys?.forEach { protectName(it) }
@@ -39,16 +41,9 @@ class BufferedScope(
         return (version - minOf(index, version)) % maximumSnapshot
     }
 
-    private fun createDefaultVariables(version: Int) = VariableMap().apply {
-        if (initialVariables != null)
-            putAll(initialVariables)
-        put("version", IntegerVariable(version))
-    }
-
     private fun protectName(key: String) {
         protectedNames.add(key)
     }
-
 
     override fun implementsLibrary(library: VariableMap) {
         library.keys.forEach { protectName(it) }
@@ -105,7 +100,7 @@ class BufferedScope(
         version++
 
         if (version >= maximumSnapshot)
-            variables[getVariablesIndex(0)] = createDefaultVariables(version)
+            variables[getVariablesIndex(0)] = createDefaultVariables(initialVariables, version)
     }
 
     override fun createChildren(initialVariables: VariableMap): Scope {

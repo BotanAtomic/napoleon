@@ -71,4 +71,6 @@ class StringVariable(initialValue: String) : Variable<String>(initialValue) {
     override fun length(): IntegerVariable {
         return IntegerVariable(value.length)
     }
+
+    override fun isSerializable() = true
 }

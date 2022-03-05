@@ -2,55 +2,14 @@ package io.deepn.script.stdlib
 
 import io.deepn.script.utils.runOrValueError
 import io.deepn.script.variables.Variable
+import io.deepn.script.variables.date.*
 import io.deepn.script.variables.primitive.BooleanVariable
 import io.deepn.script.variables.primitive.IntegerVariable
 import io.deepn.script.variables.primitive.StringVariable
-import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-
-
-class DateTimeVariable(date: LocalDateTime) : Variable<LocalDateTime>(date) {
-
-    override fun type() = "date_time"
-
-    override fun subtract(by: Variable<*>): Variable<*> {
-        return when (by) {
-            is DateTimeVariable -> DurationVariable(Duration.between(this.value, by.value))
-            is TimeVariable -> DurationVariable(Duration.between(this.value, by.value))
-            else -> super.subtract(by)
-        }
-    }
-
-}
-
-class DateVariable(date: LocalDate) : Variable<LocalDate>(date) {
-
-    override fun type() = "date"
-
-}
-
-class TimeVariable(time: LocalTime) : Variable<LocalTime>(time) {
-
-    override fun type() = "time"
-
-    override fun subtract(by: Variable<*>): Variable<*> {
-        return when (by) {
-            is DateTimeVariable -> DurationVariable(Duration.between(this.value, by.value))
-            is TimeVariable -> DurationVariable(Duration.between(this.value, by.value))
-            else -> super.subtract(by)
-        }
-    }
-
-}
-
-class DurationVariable(duration: Duration) : Variable<Duration>(duration) {
-
-    override fun type() = "duration"
-
-}
 
 @Package("date")
 object Date {
