@@ -62,6 +62,9 @@ open class BufferedScope(
 
         val resolvedVariable = variables[key] ?: library?.get(key) ?: staticVariables[key]
 
+        if(resolvedVariable != null && !resolvedVariable.isSerializable() && index != 0)
+            return Void
+
         if (resolvedVariable == null && parent != null)
             return parent.resolve(key, returnMemoryAddress)
 

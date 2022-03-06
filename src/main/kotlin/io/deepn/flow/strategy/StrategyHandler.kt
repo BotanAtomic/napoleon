@@ -12,18 +12,33 @@ annotation class StrategyFunction
 
 typealias StrategyFunctionArguments = Map<String, Variable<*>>
 
-open class StrategyHandler {
+abstract class StrategyHandler {
 
-    private val functions = this::class.functions.filter {
-        it.hasAnnotation<StrategyFunction>()
-    }.associateBy { it.name.lowercase() }.toMutableMap()
+    protected val functions = HashMap<String, (StrategyFunctionArguments) -> Variable<*>>()
 
     fun call(id: String, parameters: StrategyFunctionArguments): Variable<*> {
         if (functions.containsKey(id.lowercase()).not())
             throw NameError("there is no strategy function named '$id'")
-        return (functions[id.lowercase()]?.call(this, parameters) ?: Null) as Variable<*>
+        val strategyFunction = functions[id.lowercase()]
+
+        if(strategyFunction != null)
+            return strategyFunction(parameters)
+
+        return Null
     }
 
 }
 
-class EmptyStrategyHandler : StrategyHandler()
+class EmptyStrategyHandler : StrategyHandler() {
+
+    init {
+        functions["buy"] = {
+            Null
+        }
+
+        functions["sell"] = {
+            Null
+        }
+    }
+
+}

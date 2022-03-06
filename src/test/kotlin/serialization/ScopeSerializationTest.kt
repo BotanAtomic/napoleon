@@ -39,13 +39,13 @@ class ScopeSerializationTest {
 
             a_history = [history(value, 1), history(value, 2)]
 
-            #println("version:", version, "| a=", a, "| history=", a_history, history(array, 1))
+            println("version:", version, "| a=", a, "| history=", a_history)
         """.trimIndent()
 
         val defaultScope = BufferedScope(initialVariables = VariableMap().apply {
-            put("hello", StringVariable("hello"))
+            put("hello", StringVariable("world"))
         })
-        val compiler = DefaultExecutionEnvironment(code, scope=defaultScope)
+        val compiler = DefaultExecutionEnvironment(code, scope = defaultScope)
 
         assert(compiler.compile().success)
 
@@ -62,11 +62,16 @@ class ScopeSerializationTest {
             val newCompiler = DefaultExecutionEnvironment(code, scope)
             assert(newCompiler.compile().success)
 
-            assert(newCompiler.scope.resolve("version").eq(IntegerVariable(5)).value)
-            assert(newCompiler.scope.resolve("array", false, 2)
-                .getIndex(IntegerVariable(2)).eq(IntegerVariable(3)).value)
+            println("--new scope--")
+            for (i in 0..4)
+                assert(newCompiler.execute().success)
 
-            assert(newCompiler.execute().success)
+            assert(newCompiler.scope.resolve("version").eq(IntegerVariable(10)).value)
+            assert(
+                newCompiler.scope.resolve("array", false, 2)
+                    .getIndex(IntegerVariable(2)).eq(IntegerVariable(3)).value
+            )
+            assert(newCompiler.scope.resolve("hello").eq(StringVariable("world")).value)
             Files.deleteIfExists(path)
         }.exceptionOrNull()?.let {
             Files.deleteIfExists(path)
