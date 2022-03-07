@@ -1,16 +1,20 @@
 package io.deepn.flow.stdlib
 
 import io.deepn.flow.DefaultExecutionEnvironment
+import io.deepn.flow.error.ValueError
 import io.deepn.flow.scope.VariableMap
 import io.deepn.flow.variables.Variable
 import io.deepn.flow.variables.function.LibraryVariable
 import io.deepn.flow.variables.function.NativeFunctionVariable
 import io.deepn.flow.variables.primitive.StringVariable
+import io.deepn.flow.variables.primitive.api.NumberVariable
 import kotlin.reflect.KCallable
 import kotlin.reflect.KClass
+import kotlin.reflect.KParameter
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.extensionReceiverParameter
 import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.full.hasAnnotation
 
 @Target(AnnotationTarget.VALUE_PARAMETER)
 annotation class Environment
@@ -18,9 +22,22 @@ annotation class Environment
 @Target(AnnotationTarget.FUNCTION)
 annotation class FunctionName(val value: String)
 
-
 @Target(AnnotationTarget.CLASS)
 annotation class Package(val value: String)
+
+object Filter {
+
+    @Target(AnnotationTarget.VALUE_PARAMETER)
+    annotation class StrictPositive
+
+    fun apply(parameter: KParameter, variable: Any?) {
+        if (variable == null) return
+
+        if (parameter.hasAnnotation<StrictPositive>() && variable is NumberVariable)
+            if (variable.toDouble() <= 0.0) throw ValueError("argument '${parameter.name}' must be strictly positive")
+    }
+
+}
 
 data class NativeFunction(
     val function: KCallable<*>,
@@ -51,7 +68,8 @@ object StandardLibrary {
             JsonLibrary,
             HttpLibrary,
             StringLibrary,
-            Date
+            DateLibrary,
+            TechnicalAnalysisLibrary
         ).forEach { load(it::class) }
     }
 

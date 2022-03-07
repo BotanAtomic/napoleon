@@ -12,7 +12,7 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @Package("date")
-object Date {
+object DateLibrary {
 
     fun currentDateTime() = DateTimeVariable(LocalDateTime.now())
 

@@ -12,12 +12,14 @@ java.sourceCompatibility = javaVersion
 
 repositories {
     mavenCentral()
+    maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots") }
 }
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation(kotlin("reflect"))
 
+    implementation("org.ta4j:ta4j-core:0.15-SNAPSHOT")
     implementation("com.google.code.gson:gson:2.9.0")
     implementation("com.github.kittinunf.fuel:fuel:2.3.1")
     implementation("org.apache.commons:commons-text:1.9")

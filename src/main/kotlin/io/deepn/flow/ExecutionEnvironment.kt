@@ -6,6 +6,7 @@ import io.deepn.flow.generated.FlowParser
 import io.deepn.flow.logger.Logger
 import io.deepn.flow.logger.SYSTEM_LOGGER
 import io.deepn.flow.scope.Scope
+import io.deepn.flow.scope.VariableMap
 import io.deepn.flow.scope.impl.BufferedScope
 import io.deepn.flow.stdlib.StandardLibrary
 import io.deepn.flow.strategy.EmptyStrategyHandler
@@ -32,7 +33,7 @@ interface ExecutionEnvironment {
 
     fun compile(): FlowCompilationResult
 
-    fun execute(): FlowExecutionResult
+    fun execute(toInject: VariableMap? = null): FlowExecutionResult
 
 }
 
@@ -57,7 +58,7 @@ class DefaultExecutionEnvironment(
     override fun compile(): FlowCompilationResult {
         if (this.context != null) return FlowCompilationResult(ArrayList(), 0)
         val time = measureTimeMillis {
-            val lexer =  FlowLexer(CharStreams.fromString(source))
+            val lexer = FlowLexer(CharStreams.fromString(source))
             lexer.errorListeners.clear()
             lexer.addErrorListener(errorHandler)
             val parser = FlowParser(CommonTokenStream(lexer))
@@ -69,8 +70,12 @@ class DefaultExecutionEnvironment(
         return FlowCompilationResult(errorHandler.exceptions, time)
     }
 
-    override fun execute(): FlowExecutionResult {
+    override fun execute(toInject: VariableMap?): FlowExecutionResult {
         context?.let { context ->
+            toInject?.forEach { (key, value) ->
+                scope.getVariables()[key] = value
+                scope.protectName(key)
+            }
             val visitor = Visitor(context, scope, stackTrace, strategyHandler)
             stackTrace.stack(visitor)
             var returnedVariable: Variable<*>? = null

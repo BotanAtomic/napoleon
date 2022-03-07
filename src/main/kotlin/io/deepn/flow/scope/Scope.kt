@@ -14,6 +14,8 @@ interface Scope {
 
     fun assign(key: String, value: Variable<*>, isStatic: Boolean = false)
 
+    fun protectName(key: String)
+
     fun remove(key: String)
 
     fun snapshot()

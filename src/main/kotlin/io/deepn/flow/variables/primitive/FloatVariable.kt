@@ -3,6 +3,7 @@ package io.deepn.flow.variables.primitive
 import io.deepn.flow.utils.doubleEquals
 import io.deepn.flow.variables.Variable
 import io.deepn.flow.variables.primitive.api.NumberVariable
+import org.ta4j.core.num.Num
 import kotlin.math.floor
 import kotlin.math.pow
 
@@ -11,6 +12,8 @@ class FloatVariable : Variable<Double>, NumberVariable {
     constructor(initialValue: String) : super(initialValue.toDouble())
 
     constructor(initialValue: Double) : super(initialValue)
+
+    constructor(initialValue: Num) : super(initialValue.doubleValue())
 
     override fun type() = "float"
 

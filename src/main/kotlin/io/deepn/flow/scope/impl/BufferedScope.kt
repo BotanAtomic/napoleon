@@ -14,7 +14,7 @@ private fun createDefaultVariables(initialVariables: VariableMap?, version: Int)
     put("version", IntegerVariable(version))
 }
 
-open class BufferedScope(
+class BufferedScope(
     private val parent: Scope? = null,
     val initialVariables: VariableMap? = null,
     val maximumSnapshot: Int = 500,
@@ -24,7 +24,7 @@ open class BufferedScope(
     val variables: Array<VariableMap> = Array(maximumSnapshot) {
         createDefaultVariables(initialVariables, it)
     }
-) : Scope, java.io.Serializable {
+) : Scope {
 
     var version = 0
     private var library: VariableMap? = null
@@ -41,7 +41,7 @@ open class BufferedScope(
         return (version - minOf(index, version)) % maximumSnapshot
     }
 
-    private fun protectName(key: String) {
+    override fun protectName(key: String) {
         protectedNames.add(key)
     }
 
@@ -62,7 +62,7 @@ open class BufferedScope(
 
         val resolvedVariable = variables[key] ?: library?.get(key) ?: staticVariables[key]
 
-        if(resolvedVariable != null && !resolvedVariable.isSerializable() && index != 0)
+        if (resolvedVariable != null && !resolvedVariable.isSerializable() && index != 0)
             return Void
 
         if (resolvedVariable == null && parent != null)

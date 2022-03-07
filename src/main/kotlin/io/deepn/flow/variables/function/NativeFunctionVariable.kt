@@ -6,6 +6,7 @@ import io.deepn.flow.error.SyntaxError
 import io.deepn.flow.error.TypeError
 import io.deepn.flow.error.UnknownError
 import io.deepn.flow.stdlib.Environment
+import io.deepn.flow.stdlib.Filter
 import io.deepn.flow.stdlib.NativeFunction
 import io.deepn.flow.variables.FunctionArguments
 import io.deepn.flow.variables.Void
@@ -88,16 +89,20 @@ class NativeFunctionVariable(
         parameters.find { it.hasAnnotation<Environment>() }?.let { toInject[it] = environment }
 
         if (arguments != null) {
-            function.valueParameters.filter { it.annotations.isEmpty() }.forEach {
+            function.valueParameters.filter { !it.hasAnnotation<Environment>() }.forEach {
                 val variable: Any? = if (!it.isVararg) {
                     arguments.findByName(it.name) ?: arguments.findByIndex(it.index - indexOffset)
                 } else {
-                    val varargVariables =
-                        arguments.takeWhile { (first, _) -> first == null }.map { (_, second) -> second }.toTypedArray()
+                    val varargVariables = arguments.takeWhile {
+                            (first, _) -> first == null
+                    }.map { (_, second) -> second }.toTypedArray()
 
                     indexOffset -= varargVariables.size
                     varargVariables
                 }
+
+                Filter.apply(it, variable)
+
                 if (variable != null) toInject[it] = variable
             }
         }
