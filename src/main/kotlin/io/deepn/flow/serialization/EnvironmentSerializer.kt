@@ -5,8 +5,11 @@ import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
 import io.deepn.flow.DefaultExecutionEnvironment
+import io.deepn.flow.scope.Scope
 import io.deepn.flow.scope.VariableMap
 import io.deepn.flow.scope.impl.DefaultScope
+import io.deepn.flow.storage.Storage
+import io.deepn.flow.storage.impl.DefaultStorage
 import io.deepn.flow.variables.Null
 import io.deepn.flow.variables.Variable
 import io.deepn.flow.variables.Void
@@ -27,6 +30,8 @@ private val gson = GsonBuilder()
     .registerTypeHierarchyAdapter(Variable::class.java, VariableSerializer())
     .registerTypeHierarchyAdapter(Variable::class.java, VariableDeserializer())
     .registerTypeHierarchyAdapter(Collection::class.java, CollectionSerializer())
+    .registerTypeAdapter(DefaultExecutionEnvironment::class.java, DefaultExecutionEnvironmentSerializer())
+    .registerTypeAdapter(DefaultExecutionEnvironmentData::class.java, DefaultExecutionEnvironmentDeserializer())
     .registerTypeAdapter(DefaultScope::class.java, DefaultScopeSerializer())
     .registerTypeAdapter(DefaultScope::class.java, DefaultScopeDeserializer())
     .registerTypeAdapter(LocalDateTime::class.java, LocalDateTimeTypeAdapter())
@@ -35,10 +40,49 @@ private val gson = GsonBuilder()
     .registerTypeAdapter(Duration::class.java, DurationTypeAdapter())
     .create()
 
+data class DefaultExecutionEnvironmentData(val storage: Storage, val scope: Scope)
+
 fun serializeEnvironment(environment: DefaultExecutionEnvironment): String = gson.toJson(environment)
 
-fun deserializeEnvironment(input: String): DefaultExecutionEnvironment =
-    gson.fromJson(input, DefaultExecutionEnvironment::class.java)
+fun deserializeEnvironment(input: String): DefaultExecutionEnvironmentData =
+    gson.fromJson(input, DefaultExecutionEnvironmentData::class.java)
+
+
+class DefaultExecutionEnvironmentSerializer : JsonSerializer<DefaultExecutionEnvironment> {
+    override fun serialize(
+        src: DefaultExecutionEnvironment,
+        typeOfSrc: Type,
+        context: JsonSerializationContext
+    ): JsonElement {
+        val jsonObject = JsonObject()
+
+        jsonObject.add("storage", context.serialize(src.getStorage()))
+        jsonObject.add("scope", context.serialize(src.getScope()))
+        return jsonObject
+    }
+
+}
+
+class DefaultExecutionEnvironmentDeserializer : JsonDeserializer<DefaultExecutionEnvironmentData> {
+    override fun deserialize(
+        json: JsonElement,
+        typeOfT: Type,
+        context: JsonDeserializationContext
+    ): DefaultExecutionEnvironmentData {
+        val jsonObject = json.asJsonObject
+
+        val storage: DefaultStorage = context.deserialize(jsonObject.get("storage")?.asJsonObject,
+            object : TypeToken<DefaultStorage>() {}.type
+        ) ?: DefaultStorage()
+
+        val scope: DefaultScope = context.deserialize(jsonObject.get("scope")?.asJsonObject,
+            object : TypeToken<DefaultScope>() {}.type
+        ) ?: DefaultScope()
+
+        return DefaultExecutionEnvironmentData(storage, scope)
+    }
+
+}
 
 class DefaultScopeSerializer : JsonSerializer<DefaultScope> {
     override fun serialize(src: DefaultScope, typeOfSrc: Type, context: JsonSerializationContext): JsonElement {

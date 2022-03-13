@@ -22,4 +22,12 @@ class StaticVariableTest {
         """.trimIndent(), NameError::class, 4)
     }
 
+    @Test
+    fun `static first-time init`() {
+        scriptAssert("""
+            static a = version
+            return a
+        """.trimIndent(), 0, 4)
+    }
+
 }
