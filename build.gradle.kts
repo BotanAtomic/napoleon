@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "io.deepn"
-version = "0.0.2"
+version = "0.0.3"
 
 val javaVersion = JavaVersion.VERSION_17
 java.sourceCompatibility = javaVersion
