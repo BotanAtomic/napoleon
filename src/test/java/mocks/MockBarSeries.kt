@@ -13,7 +13,7 @@ import java.util.function.Function
 class MockBarSeries : BaseBarSeries {
     constructor(nf: Function<Number, Num>, vararg data: Number) : super(numbersToBar(nf, listOf(*data)))
     constructor(nf: Function<Number, Num>, data: List<Double>) : super(numbersToBar(nf, data))
-    constructor(bars: List<Bar?>?) : super(bars)
+    constructor(bars: List<Bar>) : super(bars)
     constructor(nf: Function<Number, Num>, data: DoubleArray, times: Array<ZonedDateTime>) : super(
         doublesAndTimesToBars(nf, data, times)
     )

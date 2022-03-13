@@ -1,6 +1,7 @@
-package io.deepn.flow.stdlib
+package io.deepn.flow.stdlib.libs
 
 import io.deepn.flow.error.ValueError
+import io.deepn.flow.stdlib.Package
 import io.deepn.flow.variables.Variable
 import io.deepn.flow.variables.error.ErrorVariable
 import io.deepn.flow.variables.primitive.FloatVariable

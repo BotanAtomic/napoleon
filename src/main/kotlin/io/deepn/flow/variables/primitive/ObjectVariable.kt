@@ -1,7 +1,7 @@
 package io.deepn.flow.variables.primitive
 
 import io.deepn.flow.scope.VariableMap
-import io.deepn.flow.stdlib.JsonLibrary.stringify
+import io.deepn.flow.stdlib.libs.JsonLibrary.stringify
 import io.deepn.flow.variables.Null
 import io.deepn.flow.variables.Variable
 import io.deepn.flow.variables.memory.MemoryAddressVariable

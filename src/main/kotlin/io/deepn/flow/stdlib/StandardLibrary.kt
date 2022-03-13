@@ -3,6 +3,7 @@ package io.deepn.flow.stdlib
 import io.deepn.flow.DefaultExecutionEnvironment
 import io.deepn.flow.error.ValueError
 import io.deepn.flow.scope.VariableMap
+import io.deepn.flow.stdlib.libs.*
 import io.deepn.flow.variables.Variable
 import io.deepn.flow.variables.function.LibraryVariable
 import io.deepn.flow.variables.function.NativeFunctionVariable
@@ -24,6 +25,9 @@ annotation class FunctionName(val value: String)
 
 @Target(AnnotationTarget.CLASS)
 annotation class Package(val value: String)
+
+@Target(AnnotationTarget.FUNCTION)
+annotation class Cached
 
 object Filter {
 
@@ -69,7 +73,8 @@ object StandardLibrary {
             HttpLibrary,
             StringLibrary,
             DateLibrary,
-            TechnicalAnalysisLibrary
+            TechnicalAnalysisLibrary,
+            StorageLibrary
         ).forEach { load(it::class) }
     }
 

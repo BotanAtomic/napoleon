@@ -7,8 +7,10 @@ import io.deepn.flow.logger.Logger
 import io.deepn.flow.logger.SYSTEM_LOGGER
 import io.deepn.flow.scope.Scope
 import io.deepn.flow.scope.VariableMap
-import io.deepn.flow.scope.impl.BufferedScope
+import io.deepn.flow.scope.impl.DefaultScope
 import io.deepn.flow.stdlib.StandardLibrary
+import io.deepn.flow.storage.Storage
+import io.deepn.flow.storage.impl.DefaultStorage
 import io.deepn.flow.strategy.EmptyStrategyHandler
 import io.deepn.flow.strategy.StrategyHandler
 import io.deepn.flow.variables.Variable
@@ -35,13 +37,22 @@ interface ExecutionEnvironment {
 
     fun execute(toInject: VariableMap? = null): FlowExecutionResult
 
+    fun getScope(): Scope
+
+    fun getLogger(): Logger
+
+    fun getStrategyHandler(): StrategyHandler
+
+    fun getStorage(): Storage
+
 }
 
 class DefaultExecutionEnvironment(
     private val source: String,
-    val scope: Scope = BufferedScope(),
-    val logger: Logger = SYSTEM_LOGGER,
-    private val strategyHandler: StrategyHandler = EmptyStrategyHandler()
+    private val scope: Scope = DefaultScope(),
+    private val logger: Logger = SYSTEM_LOGGER,
+    private val strategyHandler: StrategyHandler = EmptyStrategyHandler(),
+    private val storage : Storage = DefaultStorage()
 ) : ExecutionEnvironment {
 
     private val stackTrace = StackTrace()
@@ -111,5 +122,13 @@ class DefaultExecutionEnvironment(
             return FlowExecutionResult(compilationException, time, returnedVariable)
         } ?: throw RuntimeException("script is not compiled")
     }
+
+    override fun getLogger() = logger
+
+    override fun getScope() = scope
+
+    override fun getStrategyHandler() = strategyHandler
+
+    override fun getStorage() = storage
 
 }

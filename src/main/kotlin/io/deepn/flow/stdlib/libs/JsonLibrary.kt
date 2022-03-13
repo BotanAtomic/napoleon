@@ -1,4 +1,4 @@
-package io.deepn.flow.stdlib
+package io.deepn.flow.stdlib.libs
 
 import com.google.gson.JsonParser
 import io.deepn.flow.utils.objectToJson

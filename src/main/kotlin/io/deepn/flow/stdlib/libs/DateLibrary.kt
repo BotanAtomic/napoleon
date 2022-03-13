@@ -1,5 +1,6 @@
-package io.deepn.flow.stdlib
+package io.deepn.flow.stdlib.libs
 
+import io.deepn.flow.stdlib.Package
 import io.deepn.flow.utils.runOrValueError
 import io.deepn.flow.variables.Variable
 import io.deepn.flow.variables.date.*

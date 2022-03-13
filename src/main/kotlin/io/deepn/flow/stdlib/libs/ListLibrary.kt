@@ -1,4 +1,4 @@
-package io.deepn.flow.stdlib
+package io.deepn.flow.stdlib.libs
 
 import io.deepn.flow.error.FlowError
 import io.deepn.flow.error.TypeError

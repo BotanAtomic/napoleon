@@ -8,9 +8,9 @@ interface Scope {
 
     fun implementsLibrary(library: VariableMap)
 
-    fun getVariables(index: Int = 0): VariableMap
+    fun getVariables(): VariableMap
 
-    fun resolve(key: String, returnMemoryAddress: Boolean = false, index: Int = 0) : Variable<*>
+    fun resolve(key: String, returnMemoryAddress: Boolean = false) : Variable<*>
 
     fun assign(key: String, value: Variable<*>, isStatic: Boolean = false)
 
@@ -21,4 +21,5 @@ interface Scope {
     fun snapshot()
 
     fun createChildren(initialVariables: VariableMap) : Scope
+
 }

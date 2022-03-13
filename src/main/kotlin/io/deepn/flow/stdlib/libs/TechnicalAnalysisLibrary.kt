@@ -1,10 +1,14 @@
-package io.deepn.flow.stdlib
+package io.deepn.flow.stdlib.libs
 
+import io.deepn.flow.stdlib.Cached
+import io.deepn.flow.stdlib.Filter
+import io.deepn.flow.stdlib.Package
 import io.deepn.flow.variables.ta.IndicatorVariable
 import io.deepn.flow.variables.primitive.IntegerVariable
 import io.deepn.flow.variables.ta.BarSeriesVariable
 import org.ta4j.core.Indicator
 import org.ta4j.core.indicators.CachedIndicator
+import org.ta4j.core.indicators.EMAIndicator
 import org.ta4j.core.indicators.SMAIndicator
 import org.ta4j.core.indicators.helpers.ConstantIndicator
 import org.ta4j.core.num.NaN
@@ -42,8 +46,14 @@ object TechnicalAnalysisLibrary {
     fun BarSeriesVariable.volume() = this.volume
 
     /** Technical Indicators **/
+
     fun sma(source: IndicatorVariable, @Filter.StrictPositive period: IntegerVariable): IndicatorVariable = IndicatorVariable(
         SMAIndicator(source.value, period.toInt())
+    )
+
+    @Cached
+    fun ema(source: IndicatorVariable, @Filter.StrictPositive period: IntegerVariable): IndicatorVariable = IndicatorVariable(
+        EMAIndicator(source.value, period.toInt())
     )
 
 }

@@ -2,7 +2,7 @@ package ta
 
 import io.deepn.flow.DefaultExecutionEnvironment
 import io.deepn.flow.scope.VariableMap
-import io.deepn.flow.scope.impl.BufferedScope
+import io.deepn.flow.scope.impl.DefaultScope
 import io.deepn.flow.variables.primitive.BooleanVariable
 import io.deepn.flow.variables.primitive.FloatVariable
 import io.deepn.flow.variables.ta.BarSeriesVariable
@@ -38,15 +38,19 @@ class SMAIndicatorTest {
             return true
         """.trimIndent()
 
-        val scope = BufferedScope(
+        val scope = DefaultScope(
             initialVariables = mutableMapOf(
                 "series" to BarSeriesVariable(data)
             ) as VariableMap
         )
 
         val environment = DefaultExecutionEnvironment(code, scope)
-        environment.compile()
-        val result = environment.execute().result
+        assert(environment.compile().success)
+        val result = environment.execute().let {
+            if(!it.success) println(it.error)
+            assert(it.success)
+            it.result
+        }
         assert(result is BooleanVariable && result.value)
     }
 
@@ -57,7 +61,7 @@ class SMAIndicatorTest {
 
         val newData = BaseBarSeries("sma_test")
 
-        val scope = BufferedScope(
+        val scope = DefaultScope(
             initialVariables = mutableMapOf(
                 "series" to BarSeriesVariable(newData)
             ) as VariableMap

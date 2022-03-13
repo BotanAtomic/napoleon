@@ -16,9 +16,13 @@ class VersioningTest {
     @Test
     fun `incremental variable index`() {
         scriptAssert("""
+            storage.init("versionList", [])
             a = version
- 
-            history(a, 9) == version - 9
+            storage.get("versionList").insert(0, a)
+            
+            if version >= 9 then
+                return storage.get("versionList")[9] == version - 9
+            end
         """.trimIndent(), true, 30)
     }
 

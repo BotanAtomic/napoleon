@@ -1,4 +1,4 @@
-package io.deepn.flow.stdlib
+package io.deepn.flow.stdlib.libs
 
 import com.github.kittinunf.fuel.*
 import com.github.kittinunf.fuel.core.FuelError
@@ -7,8 +7,9 @@ import com.github.kittinunf.fuel.core.Response
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.core.isSuccessful
 import io.deepn.flow.error.ValueError
-import io.deepn.flow.stdlib.JsonLibrary.isJson
-import io.deepn.flow.stdlib.JsonLibrary.stringify
+import io.deepn.flow.stdlib.Package
+import io.deepn.flow.stdlib.libs.JsonLibrary.isJson
+import io.deepn.flow.stdlib.libs.JsonLibrary.stringify
 import io.deepn.flow.utils.parseJson
 import io.deepn.flow.variables.Variable
 import io.deepn.flow.variables.error.ErrorVariable

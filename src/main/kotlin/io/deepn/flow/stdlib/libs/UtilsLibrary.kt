@@ -1,4 +1,4 @@
-package io.deepn.flow.stdlib
+package io.deepn.flow.stdlib.libs
 
 import io.deepn.flow.DefaultExecutionEnvironment
 import io.deepn.flow.error.NameError
@@ -22,16 +22,5 @@ object UtilsLibrary {
     fun bool(variable: Variable<*>) = variable.toBoolean()
 
     fun type(variable: Variable<*>) = StringVariable(variable.type())
-
-    fun history(
-        variable: Variable<*>,
-        version: IntegerVariable = IntegerVariable(0),
-        @Environment environment: DefaultExecutionEnvironment
-    ) : Variable<*> {
-
-        return variable.name?.let { environment.scope.resolve(it, false, version.toInt()) }?: ErrorVariable(
-            NameError("variable is not in global scope")
-        )
-    }
 
 }

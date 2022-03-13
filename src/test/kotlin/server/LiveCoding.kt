@@ -4,8 +4,8 @@ import NumberTest
 import com.sun.net.httpserver.HttpServer
 import io.deepn.flow.DefaultExecutionEnvironment
 import io.deepn.flow.logger.Logger
-import io.deepn.flow.scope.impl.BufferedScope
-import io.deepn.flow.stdlib.JsonLibrary.stringify
+import io.deepn.flow.scope.impl.DefaultScope
+import io.deepn.flow.stdlib.libs.JsonLibrary.stringify
 import io.deepn.flow.variables.function.LibraryVariable
 import io.deepn.flow.variables.function.NativeFunctionVariable
 import io.deepn.flow.variables.primitive.ObjectVariable
@@ -36,7 +36,7 @@ fun main() {
                 it.sendResponseHeaders(204, -1)
                 return@createContext
             }
-            val scope = BufferedScope()
+            val scope = DefaultScope()
             val interpreter = DefaultExecutionEnvironment(
                 String(it.requestBody.readAllBytes()),
                 scope,
@@ -90,7 +90,7 @@ fun main() {
 
                 resultBuilder.append("\n").append(IntRange(0, 20).joinToString(" ") { "#" }).append("\n")
 
-                scope.getVariables(1).forEach { (key, value) ->
+                scope.getVariables().forEach { (key, value) ->
                     if (value !is LibraryVariable && value !is NativeFunctionVariable) {
                         resultBuilder.append("\t")
                         if (value is ObjectVariable)

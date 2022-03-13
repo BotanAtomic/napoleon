@@ -10,6 +10,12 @@ import java.util.function.Function
 class MockBar : BaseBar {
     private var trades: Long = 0
 
+    constructor(sDelta: Int, closePrice: Double, numFunction: Function<Number, Num>) : this(
+        ZonedDateTime.now().plusSeconds(sDelta.toLong()),
+        closePrice,
+        numFunction
+    )
+
     constructor(closePrice: Double, numFunction: Function<Number, Num>) : this(
         ZonedDateTime.now(),
         closePrice,

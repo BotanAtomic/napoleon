@@ -2,7 +2,7 @@ package io.deepn.flow.variables.ta
 
 import io.deepn.flow.error.IndexError
 import io.deepn.flow.error.TypeError
-import io.deepn.flow.stdlib.ArithmeticIndicator
+import io.deepn.flow.stdlib.libs.ArithmeticIndicator
 import io.deepn.flow.variables.Variable
 import io.deepn.flow.variables.primitive.BooleanVariable
 import io.deepn.flow.variables.primitive.FloatVariable
