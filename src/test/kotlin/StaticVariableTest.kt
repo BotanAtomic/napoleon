@@ -27,7 +27,7 @@ class StaticVariableTest {
         scriptAssert("""
             static a = version
             return a
-        """.trimIndent(), 0, 4)
+        """.trimIndent(), 0, 4)qqq
     }
 
 }

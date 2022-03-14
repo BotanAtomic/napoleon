@@ -9,12 +9,9 @@ import io.deepn.flow.variables.primitive.IntegerVariable
 import io.deepn.flow.variables.primitive.ListVariable
 import io.deepn.flow.variables.primitive.StringVariable
 import org.junit.jupiter.api.Test
-import java.nio.file.Files
-import java.nio.file.Paths
 
 class ScopeSerializationTest {
 
-    //TODO: serialize with storage
     @Test
     fun serialize() {
         val code = """
