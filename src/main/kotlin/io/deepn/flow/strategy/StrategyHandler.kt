@@ -3,8 +3,6 @@ package io.deepn.flow.strategy
 import io.deepn.flow.error.NameError
 import io.deepn.flow.variables.Null
 import io.deepn.flow.variables.Variable
-import kotlin.reflect.full.functions
-import kotlin.reflect.full.hasAnnotation
 
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION)
@@ -21,7 +19,7 @@ abstract class StrategyHandler {
             throw NameError("there is no strategy function named '$id'")
         val strategyFunction = functions[id.lowercase()]
 
-        if(strategyFunction != null)
+        if (strategyFunction != null)
             return strategyFunction(parameters)
 
         return Null

@@ -3,10 +3,10 @@ package io.deepn.flow.stdlib.libs
 import io.deepn.flow.error.FlowError
 import io.deepn.flow.error.TypeError
 import io.deepn.flow.utils.createFunctionArguments
+import io.deepn.flow.utils.toError
 import io.deepn.flow.variables.Null
 import io.deepn.flow.variables.Variable
 import io.deepn.flow.variables.Void
-import io.deepn.flow.variables.error.ErrorVariable
 import io.deepn.flow.variables.function.LocalFunctionVariable
 import io.deepn.flow.variables.primitive.BooleanVariable
 import io.deepn.flow.variables.primitive.IntegerVariable
@@ -54,11 +54,11 @@ object ListLibrary {
         this.value.map {
             val result = kotlin.runCatching {
                 val returnedValue = filter.call(createFunctionArguments(Pair(null, it)))
-                if (returnedValue !is BooleanVariable) return ErrorVariable(TypeError("filter function must return a boolean value"))
+                if (returnedValue !is BooleanVariable) return TypeError("filter function must return a boolean value").toError()
                 if (returnedValue.value) it else null
             }
             if (result.exceptionOrNull() != null && result.exceptionOrNull() is FlowError)
-                return ErrorVariable(result.exceptionOrNull() as FlowError)
+                return (result.exceptionOrNull() as FlowError).toError()
 
             return@map result.getOrNull()
         }.forEach {
@@ -82,7 +82,7 @@ object ListLibrary {
                     transform.call(createFunctionArguments(Pair(null, it)))
                 }
                 if (result.exceptionOrNull() != null && result.exceptionOrNull() is FlowError)
-                    return ErrorVariable(result.exceptionOrNull() as FlowError)
+                    return (result.exceptionOrNull() as FlowError).toError()
 
                 result.getOrNull()
             }.filterNotNull()
@@ -95,7 +95,7 @@ object ListLibrary {
                 action.call(createFunctionArguments(Pair(null, it)))
             }
             if (result.exceptionOrNull() != null && result.exceptionOrNull() is FlowError)
-                return ErrorVariable(result.exceptionOrNull() as FlowError)
+                return (result.exceptionOrNull() as FlowError).toError()
         }
 
         return Void
@@ -106,11 +106,11 @@ object ListLibrary {
             this.value.filter {
                 val result = kotlin.runCatching {
                     val returnedValue = filter.call(createFunctionArguments(Pair(null, it)))
-                    if (returnedValue !is BooleanVariable) return ErrorVariable(TypeError("filter function must return a boolean value"))
+                    if (returnedValue !is BooleanVariable) return TypeError("filter function must return a boolean value").toError()
                     returnedValue.value
                 }
                 if (result.exceptionOrNull() != null && result.exceptionOrNull() is FlowError)
-                    return ErrorVariable(result.exceptionOrNull() as FlowError)
+                    return (result.exceptionOrNull() as FlowError).toError()
 
                 result.getOrNull() == true
             }

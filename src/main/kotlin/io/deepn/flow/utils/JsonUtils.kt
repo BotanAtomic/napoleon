@@ -4,7 +4,6 @@ import com.google.gson.*
 import io.deepn.flow.error.JsonError
 import io.deepn.flow.variables.Null
 import io.deepn.flow.variables.Variable
-import io.deepn.flow.variables.error.ErrorVariable
 import io.deepn.flow.variables.primitive.*
 import java.math.BigDecimal
 
@@ -86,7 +85,7 @@ fun parseJson(input: String): Variable<*> {
     val result = runCatching { JsonParser.parseString(input) }
 
     result.exceptionOrNull()?.let { exception ->
-        return ErrorVariable(JsonError(exception.cause?.message ?: "invalid json"))
+        return JsonError(exception.cause?.message ?: "invalid json").toError()
     }
     return result.getOrNull()?.let { parseJsonElement(it) } ?: Null
 }

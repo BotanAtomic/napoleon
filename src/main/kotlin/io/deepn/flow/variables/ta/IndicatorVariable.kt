@@ -30,8 +30,7 @@ class IndicatorVariable(indicator: NumberIndicator) : Variable<NumberIndicator>(
 
     private val series: BarSeries = value.barSeries
 
-    private val currentValue: FloatVariable
-        get() = FloatVariable(value.getValue(series.endIndex))
+    private fun currentValue(): FloatVariable = FloatVariable(value.getValue(series.endIndex))
 
     override fun add(by: Variable<*>): Variable<*> {
         return operationOr(by, { a, b -> a.plus(b) }, { super.add(by) })
@@ -73,25 +72,25 @@ class IndicatorVariable(indicator: NumberIndicator) : Variable<NumberIndicator>(
         throw TypeError("indicator index must be integer, not '${position.type()}'")
     }
 
-    override fun gt(variable: Variable<*>) = currentValue.gt(variable)
+    override fun gt(variable: Variable<*>) = currentValue().gt(variable)
 
-    override fun gte(variable: Variable<*>) = currentValue.gte(variable)
+    override fun gte(variable: Variable<*>) = currentValue().gte(variable)
 
-    override fun lt(variable: Variable<*>) = currentValue.lt(variable)
+    override fun lt(variable: Variable<*>) = currentValue().lt(variable)
 
-    override fun lte(variable: Variable<*>) = currentValue.lte(variable)
+    override fun lte(variable: Variable<*>) = currentValue().lte(variable)
 
     override fun eq(variable: Variable<*>): BooleanVariable {
         return when (variable) {
-            is FloatVariable -> currentValue.eq(variable)
-            is IndicatorVariable -> currentValue.eq(variable.currentValue)
+            is FloatVariable -> currentValue().eq(variable)
+            is IndicatorVariable -> currentValue().eq(variable.currentValue())
             else -> super.eq(variable)
         }
     }
 
     override fun type() = "indicator"
 
-    override fun valueToString() = currentValue.valueToString()
+    override fun valueToString() = currentValue().valueToString()
 
     override fun length() = IntegerVariable(series.barCount)
 

@@ -11,9 +11,9 @@ import io.deepn.flow.stdlib.Package
 import io.deepn.flow.stdlib.libs.JsonLibrary.isJson
 import io.deepn.flow.stdlib.libs.JsonLibrary.stringify
 import io.deepn.flow.utils.parseJson
+import io.deepn.flow.utils.toError
 import io.deepn.flow.variables.Null
 import io.deepn.flow.variables.Variable
-import io.deepn.flow.variables.error.ErrorVariable
 import io.deepn.flow.variables.primitive.*
 
 class HttpRequestVariable(private val request: Request) : Variable<Request>(request) {
@@ -54,7 +54,7 @@ fun request(
 ): Variable<*> = try {
     HttpRequestVariable(request())
 } catch (e: Exception) {
-    ErrorVariable(ValueError("malformed url '${url.value}', ${e.message ?: "unknown"}"))
+    ValueError("malformed url '${url.value}', ${e.message ?: "unknown"}").toError()
 }
 
 @Package("http")

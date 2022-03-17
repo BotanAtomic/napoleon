@@ -2,8 +2,8 @@ package io.deepn.flow.stdlib.libs
 
 import io.deepn.flow.error.ValueError
 import io.deepn.flow.stdlib.Package
+import io.deepn.flow.utils.toError
 import io.deepn.flow.variables.Variable
-import io.deepn.flow.variables.error.ErrorVariable
 import io.deepn.flow.variables.primitive.FloatVariable
 import io.deepn.flow.variables.primitive.IntegerVariable
 import io.deepn.flow.variables.primitive.api.NumberVariable
@@ -84,7 +84,7 @@ object MathLibrary {
         from: IntegerVariable = IntegerVariable(Long.MIN_VALUE),
         to: IntegerVariable = IntegerVariable(Long.MAX_VALUE)
     ): Variable<*> {
-        if (to.lte(from).value) return ErrorVariable(ValueError("bound must be greater than origin"))
+        if (to.lte(from).value) return ValueError("bound must be greater than origin").toError()
         return IntegerVariable(nextLong(from.toLong(), to.toLong()))
     }
 
@@ -92,7 +92,7 @@ object MathLibrary {
         from: NumberVariable = IntegerVariable(0),
         to: NumberVariable = IntegerVariable(1)
     ): Variable<*> {
-        if (to.toDouble() <= from.toDouble()) return ErrorVariable(ValueError("bound must be greater than origin"))
+        if (to.toDouble() <= from.toDouble()) return ValueError("bound must be greater than origin").toError()
         return FloatVariable(nextDouble(from.toDouble(), to.toDouble()))
     }
 }

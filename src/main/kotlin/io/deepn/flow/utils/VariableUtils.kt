@@ -63,5 +63,5 @@ fun runOrValueError(unit: () -> Variable<*>): Variable<*> {
     return if (result.isSuccess)
         result.getOrNull() ?: Null
     else
-        ErrorVariable(ValueError(result.exceptionOrNull()?.message ?: "unknown error"))
+        ValueError(result.exceptionOrNull()?.message ?: "unknown error").toError()
 }
