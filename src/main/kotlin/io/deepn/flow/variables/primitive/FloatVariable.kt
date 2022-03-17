@@ -135,4 +135,12 @@ class FloatVariable : Variable<Double>, NumberVariable {
 
     override fun isSerializable() = true
 
+    override fun compareTo(other: Variable<*>): Int {
+        return when(other) {
+            is IntegerVariable -> value.compareTo(other.value)
+            is FloatVariable -> value.compareTo(other.value)
+            is StringVariable -> value.toString().compareTo(other.value)
+            else -> 0
+        }
+    }
 }

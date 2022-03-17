@@ -1,6 +1,7 @@
 package io.deepn.flow.stdlib.libs
 
 import io.deepn.flow.utils.runOrValueError
+import io.deepn.flow.variables.primitive.BooleanVariable
 import io.deepn.flow.variables.primitive.IntegerVariable
 import io.deepn.flow.variables.primitive.StringVariable
 
@@ -22,6 +23,9 @@ object StringLibrary {
         startIndex: IntegerVariable,
         endIndex: IntegerVariable
     ) = runOrValueError { StringVariable(this.value.substring(startIndex.toInt(), endIndex.toInt())) }
+
+    fun StringVariable.contains(value: StringVariable, ignoreCase: BooleanVariable = BooleanVariable(false)) =
+        BooleanVariable(this.value.contains(value.value, ignoreCase.value))
 
 
 }

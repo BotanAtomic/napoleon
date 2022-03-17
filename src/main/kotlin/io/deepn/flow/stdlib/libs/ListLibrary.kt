@@ -16,6 +16,16 @@ import kotlin.math.sign
 
 object ListLibrary {
 
+    fun list(size: IntegerVariable = IntegerVariable(1)) = ListVariable().apply {
+        (0 until size.value).forEach { _ -> this.append(Null) }
+    }
+
+    fun ListVariable.fill(variable: Variable<*>) = this.apply {
+        for (i in 0 until this.value.size) {
+            this.value[i] = variable
+        }
+    }
+
     fun ListVariable.append(variable: Variable<*>) = this.insert(variable)
 
     fun ListVariable.insert(position: IntegerVariable, variable: Variable<*>) {
@@ -59,7 +69,7 @@ object ListLibrary {
         return Void
     }
 
-    fun ListVariable.contains(value: Variable<*>) = BooleanVariable(this.value.contains(value))
+    fun ListVariable.contains(value: Variable<*>) = BooleanVariable(this.value.find { it.eq(value).value } != null)
 
     fun ListVariable.reverse() = ListVariable(this.value.reversed())
 
@@ -107,12 +117,18 @@ object ListLibrary {
         )
     }
 
-    fun ListVariable.distinct() : ListVariable {
+    fun ListVariable.distinct(): ListVariable {
         return ListVariable(this.value.distinctBy { it.valueToString() })
     }
 
-    fun ListVariable.extends(list: ListVariable) : ListVariable {
+    fun ListVariable.extends(list: ListVariable): ListVariable {
         return ListVariable(ArrayList(this.value).apply { this.addAll(list.value) })
     }
 
+    fun ListVariable.sort(reverse: BooleanVariable = BooleanVariable(false)): ListVariable =
+        ListVariable(this.value.sortedBy { it }).let {
+            return@let if (reverse.value) it.reverse() else it
+        }
+
+    fun ListVariable.shuffle() = ListVariable(this.value.shuffled())
 }

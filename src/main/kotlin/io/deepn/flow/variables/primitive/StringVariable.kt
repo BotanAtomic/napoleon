@@ -43,7 +43,7 @@ class StringVariable(initialValue: String) : Variable<String>(initialValue) {
     }
 
     override fun toBoolean(): BooleanVariable {
-        return BooleanVariable(value.isNotEmpty())
+        return BooleanVariable(value.equals("true", ignoreCase = true))
     }
 
     override fun toIterator(): Iterator<Variable<*>> {
@@ -73,4 +73,13 @@ class StringVariable(initialValue: String) : Variable<String>(initialValue) {
     }
 
     override fun isSerializable() = true
+
+    override fun compareTo(other: Variable<*>): Int {
+        return when (other) {
+            is IntegerVariable -> value.compareTo(other.value.toString())
+            is FloatVariable -> value.compareTo(other.value.toString())
+            is StringVariable -> value.compareTo(other.value)
+            else -> 0
+        }
+    }
 }

@@ -173,7 +173,7 @@ tableconstructor
     ;
 
 fieldlist
-    : expression (',' expression)*
+    : NEWLINE* expression (',' NEWLINE* expression)* NEWLINE*
     ;
 
 staticVariable

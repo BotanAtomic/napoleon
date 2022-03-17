@@ -6,7 +6,7 @@ import io.deepn.flow.variables.Variable
 import java.util.*
 
 class ListVariable(
-    list: List<Variable<*>> = LinkedList()
+    list: Collection<Variable<*>> = LinkedList()
 ) : Variable<LinkedList<Variable<*>>>(LinkedList(list)) {
 
     override fun type() = "list"

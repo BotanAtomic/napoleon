@@ -24,7 +24,7 @@ import org.antlr.v4.runtime.tree.RuleNode
 import org.apache.commons.text.StringEscapeUtils
 
 enum class Status {
-    NORMAL, BREAK, RETURN
+    NORMAL, BREAK, RETURN;
 }
 
 class Visitor(
@@ -159,7 +159,9 @@ class Visitor(
 
         val initialValue = visit(context.expression(0))
         val limitValue = visit(context.expression(1))
-        val stepValue = if (context.expression().size > 2) visit(context.expression(2)) else IntegerVariable(1)
+        val isAscending = initialValue.lte(limitValue).value
+        val stepValue = if (context.expression().size > 2) visit(context.expression(2)) else
+            IntegerVariable(if(isAscending) 1 else -1)
 
         if (initialValue !is NumberVariable) throw TypeError("'for' initial value must be a number")
         if (limitValue !is NumberVariable) throw TypeError("'for' limit must be a number")

@@ -28,7 +28,7 @@ object Void : Variable<Any>(Any()) {
 typealias FunctionParameters = LinkedHashMap<String, (() -> Variable<*>)?>
 typealias FunctionArguments = LinkedList<Pair<String?, Variable<*>>>?
 
-abstract class Variable<T : Any>(val value: T) {
+abstract class Variable<T : Any>(val value: T) : Comparable<Variable<*>> {
 
     var name: String? = null
 
@@ -150,6 +150,10 @@ abstract class Variable<T : Any>(val value: T) {
     }
 
     open fun isSerializable(): Boolean = false
+
+    override fun compareTo(other: Variable<*>): Int {
+        return 0
+    }
 }
 
 fun classToType(variableClass: Any?) = when (variableClass) {
