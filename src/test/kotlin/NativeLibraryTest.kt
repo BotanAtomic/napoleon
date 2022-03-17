@@ -30,15 +30,15 @@ class NativeLibraryTest {
     @Test
     fun `function extension`() {
         scriptAssert("""
-            list = [1,2,3]
-            list.reverse()
+            mList = [1,2,3]
+            mList.reverse()
         """.trimIndent(), LinkedList(listOf(3,2,1))
         )
 
         scriptAssert("""
-            list = [1,2,3]
-            list.clear()
-            list
+            mList = [1,2,3]
+            mList.clear()
+            mList
         """.trimIndent(), LinkedList<Any>()
         )
     }
