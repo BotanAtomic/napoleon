@@ -11,6 +11,7 @@ import io.deepn.flow.variables.function.LocalFunctionVariable
 import io.deepn.flow.variables.function.NativeFunctionVariable
 import io.deepn.flow.variables.memory.IndexedVariable
 import io.deepn.flow.variables.primitive.*
+import io.deepn.flow.variables.primitive.api.NumberVariable
 import java.util.*
 
 object Null : Variable<Any>(Any()) {
@@ -172,5 +173,7 @@ fun classToType(variableClass: Any?) = when (variableClass) {
     DateVariable::class -> "date"
     TimeVariable::class -> "time"
     DurationVariable::class -> "duration"
+    NumberVariable::class -> "number"
+    Variable::class -> "any"
     else -> "unknown"
 }
