@@ -1,13 +1,21 @@
 package esgi.napoleon.stdlib.libs
 
 import esgi.napoleon.error.ValueError
+import esgi.napoleon.stdlib.FunctionName
 import esgi.napoleon.stdlib.Package
 import esgi.napoleon.variables.Variable
 import esgi.napoleon.variables.primitive.FloatVariable
 import esgi.napoleon.variables.primitive.IntegerVariable
+import esgi.napoleon.variables.primitive.ListVariable
+import esgi.napoleon.variables.primitive.ObjectVariable
 import esgi.napoleon.variables.primitive.api.NumberVariable
+import esgi.napoleon.variables.stats.LinearRegressionVariable
+import org.apache.commons.math3.ml.clustering.DoublePoint
+import org.apache.commons.math3.ml.clustering.KMeansPlusPlusClusterer
+import org.apache.commons.math3.stat.regression.SimpleRegression
 import kotlin.random.Random.Default.nextDouble
 import kotlin.random.Random.Default.nextLong
+
 
 @Package("math")
 object MathLibrary {
@@ -93,5 +101,57 @@ object MathLibrary {
     ): Variable<*> {
         if (to.toDouble() <= from.toDouble()) throw ValueError("bound must be greater than origin")
         return FloatVariable(nextDouble(from.toDouble(), to.toDouble()))
+    }
+
+    @FunctionName("linear_regression")
+    fun linearRegression(x: ListVariable, y: ListVariable): LinearRegressionVariable {
+        val regression = SimpleRegression()
+        if (x.value.count { it !is NumberVariable } > 0) throw ValueError("x must be a list of numbers")
+        if (y.value.count { it !is NumberVariable } > 0) throw ValueError("y must be a list of numbers")
+
+        if (y.value.size != x.value.size) throw ValueError("X and Y sizes are not the same")
+
+        x.value.zip(y.value).map { it.first as NumberVariable to it.second as NumberVariable }.forEach { (x, y) ->
+            println("Add data ${x.toDouble()} - ${y.toDouble()}")
+            regression.addData(x.toDouble(), y.toDouble())
+        }
+
+        return LinearRegressionVariable(regression)
+    }
+
+    fun LinearRegressionVariable.predict(x: NumberVariable) = FloatVariable(this.value.predict(x.toDouble()))
+
+
+    fun kmeans(x: ListVariable, y: ListVariable, k: IntegerVariable): ListVariable {
+        if (x.value.count { it !is NumberVariable } > 0) throw ValueError("x must be a list of numbers")
+        if (y.value.count { it !is NumberVariable } > 0) throw ValueError("y must be a list of numbers")
+
+        if (y.value.size != x.value.size) throw ValueError("X and Y sizes are not the same")
+        if (k.value <= 0) throw ValueError("K must be a positive number")
+        val list = ArrayList<DoublePoint>()
+
+        val kmeans = KMeansPlusPlusClusterer<DoublePoint>(k.toInt())
+        x.value.zip(y.value).map { it.first as NumberVariable to it.second as NumberVariable }.forEach { (x, y) ->
+            list.add(DoublePoint(doubleArrayOf(x.toDouble(), y.toDouble())))
+        }
+
+        val toReturn = ListVariable()
+
+        kmeans.cluster(list).forEach {
+            toReturn.insert(ObjectVariable(hashMapOf(
+                "center" to ObjectVariable(hashMapOf(
+                    "x" to FloatVariable(it.center.point[0]),
+                    "y" to FloatVariable(it.center.point[1])
+                )),
+                "points" to ListVariable(it.points.map { point ->
+                    ObjectVariable(hashMapOf(
+                        "x" to FloatVariable(point.point[0]),
+                        "y" to FloatVariable(point.point[1])
+                    ))
+                })
+            )))
+        }
+
+        return toReturn
     }
 }

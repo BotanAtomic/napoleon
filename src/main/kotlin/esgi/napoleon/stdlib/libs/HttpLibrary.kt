@@ -55,7 +55,7 @@ class HttpResponseVariable(response: Response, exception: FuelError?) : Variable
 fun request(
     url: StringVariable,
     request: () -> Request
-): Variable<*> = try {
+): HttpRequestVariable = try {
     HttpRequestVariable(request())
 } catch (e: Exception) {
     throw ValueError("malformed url '${url.value}', ${e.message ?: "unknown"}")
@@ -64,7 +64,7 @@ fun request(
 @Package("http")
 object HttpLibrary {
 
-    fun get(url: StringVariable): Variable<*> = request(url) { url.value.httpGet() }
+    fun get(url: StringVariable): HttpRequestVariable = request(url) { url.value.httpGet() }
 
     fun post(url: StringVariable): Variable<*> = request(url) { url.value.httpPost() }
 

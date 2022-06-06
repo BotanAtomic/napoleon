@@ -21,6 +21,9 @@ repositories {
 val xchangeVersion = "5.0.13"
 
 dependencies {
+
+    implementation("org.apache.commons:commons-math3:3.6.1")
+
     implementation("com.influxdb:influxdb-client-java:6.0.0")
     implementation("com.influxdb:flux-dsl:6.0.0")
 

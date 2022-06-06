@@ -18,15 +18,23 @@ import esgi.napoleon.variables.ta.IndicatorVariable
 import org.knowm.xchart.OHLCChart
 import org.knowm.xchart.PieChart
 import org.knowm.xchart.XYChart
+import org.knowm.xchart.XYSeries
 import org.knowm.xchart.style.Styler.LegendPosition
 import org.knowm.xchart.style.markers.SeriesMarkers
+import java.awt.Color
 import java.util.stream.Collectors
 
 @Package("plt")
 object PlotLibrary {
 
-    fun ohlc(series: BarSeriesVariable, @Environment environment: ExecutionEnvironment): Variable<*> {
-        val chart = OHLCChart(400, 300)
+    fun ohlc(
+        series: BarSeriesVariable,
+        width: IntegerVariable = IntegerVariable(400),
+        height: IntegerVariable = IntegerVariable(300),
+        @Environment environment: ExecutionEnvironment,
+    ): Variable<*> {
+        val chart = OHLCChart(400.coerceAtLeast(width.toInt()), 500.coerceAtLeast(height.toInt()))
+        println(chart.height)
         val open = mutableListOf<Number>()
         val high = mutableListOf<Number>()
         val low = mutableListOf<Number>()
@@ -48,8 +56,12 @@ object PlotLibrary {
     }
 
     @FunctionName("xy")
-    fun xy(title: StringVariable, width: IntegerVariable = IntegerVariable(400), height: IntegerVariable = IntegerVariable(300)): Variable<*> {
-        val chart = XYChart(400.coerceAtMost(width.toInt()), 300.coerceAtMost(height.toInt()))
+    fun xy(
+        title: StringVariable,
+        width: IntegerVariable = IntegerVariable(400),
+        height: IntegerVariable = IntegerVariable(300)
+    ): Variable<*> {
+        val chart = XYChart(400.coerceAtLeast(width.toInt()), 300.coerceAtLeast(height.toInt()))
         chart.title = title.value
         return PlotVariable(chart)
     }
@@ -74,7 +86,7 @@ object PlotLibrary {
     }
 
     @FunctionName("add_y")
-    fun PlotVariable.addY(y: ListVariable, name: StringVariable): Variable<*> {
+    fun PlotVariable.addY(y: ListVariable, name: StringVariable, type: StringVariable = StringVariable("default")): Variable<*> {
         if (y.value.count { it !is NumberVariable } > 0) throw ValueError("y must be a list of numbers")
         if (this.value !is XYChart) throw ValueError("ad_y function can only be used on XYChart")
 
@@ -82,8 +94,15 @@ object PlotLibrary {
 
         if (value.seriesMap.containsKey(seriesName)) throw ValueError("Series name already exists")
 
-        this.value.addSeries(seriesName, y.value.map { (it as NumberVariable).toDouble() })
-            .marker = SeriesMarkers.NONE
+        this.value.addSeries(seriesName, y.value.map { (it as NumberVariable).toDouble() }).apply {
+            marker = SeriesMarkers.NONE
+
+            if(type.value == "scatter") {
+                marker = SeriesMarkers.CROSS
+                markerColor = Color.RED
+                xySeriesRenderStyle = XYSeries.XYSeriesRenderStyle.Scatter
+            }
+        }
 
         return this
     }
@@ -142,8 +161,12 @@ object PlotLibrary {
     }
 
     @FunctionName("pie")
-    fun pie(title: StringVariable? = null, width: IntegerVariable = IntegerVariable(400), height: IntegerVariable = IntegerVariable(300)): Variable<*> {
-        val chart = PieChart(400.coerceAtMost(width.toInt()), 300.coerceAtMost(height.toInt()))
+    fun pie(
+        title: StringVariable? = null,
+        width: IntegerVariable = IntegerVariable(400),
+        height: IntegerVariable = IntegerVariable(300)
+    ): Variable<*> {
+        val chart = PieChart(400.coerceAtLeast(width.toInt()), 500.coerceAtLeast(height.toInt()))
         chart.title = title?.value ?: "Unnamed Pie Chart"
         return PlotVariable(chart)
     }

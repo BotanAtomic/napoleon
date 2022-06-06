@@ -1,6 +1,8 @@
 package esgi.napoleon.stdlib.libs
 
 import com.google.gson.JsonParser
+import esgi.napoleon.error.ValueError
+import esgi.napoleon.stdlib.FunctionName
 import esgi.napoleon.utils.objectToJson
 import esgi.napoleon.utils.parseJson
 import esgi.napoleon.variables.Variable
@@ -28,5 +30,16 @@ object JsonLibrary {
         keys.value.forEach { this.value[it.valueToString()] = value }
     }
 
+    @FunctionName("create_object")
+    fun createObject(keys: ListVariable, values: ListVariable): ObjectVariable {
+        if(keys.value.size != values.value.size)
+            throw ValueError("The size of the keys and values must be the same")
+
+        val value = ObjectVariable()
+        keys.value.zip(values.value).forEach {
+            value[it.first.valueToString()] = it.second
+        }
+        return value
+    }
 
 }

@@ -21,6 +21,7 @@ import esgi.napoleon.variables.ta.BarSeriesVariable
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneOffset
+import kotlin.math.abs
 import kotlin.math.ceil
 
 @Retention(AnnotationRetention.RUNTIME)
@@ -67,7 +68,7 @@ class DefaultStrategyHandler(logger: Logger) : StrategyHandler() {
         "binance" to Exchange.BINANCE.createExchangeApi(initialize = true)
     )
 
-    fun dateToInstant(date: Variable<*>, key: String): Instant {
+    private fun dateToInstant(date: Variable<*>, key: String): Instant {
         return when (date) {
             is NumberVariable -> Instant.ofEpochMilli(date.toLong())
             is StringVariable -> Instant.parse(date.value)
@@ -113,9 +114,9 @@ class DefaultStrategyHandler(logger: Logger) : StrategyHandler() {
                 exchange.valueToString().uppercase(), currencyPair.format(), timeFrame, from, to
             )
 
-            val waitedCandlesNumber = Duration.between(from, to).dividedBy(timeFrame.duration) + 1
+            val waitedCandlesNumber = Duration.between(from, to).dividedBy(timeFrame.duration)
 
-            if(waitedCandlesNumber != candles.size.toLong()) {
+            if(abs(waitedCandlesNumber - candles.size.toLong()) >= 2) {
                 candles = exchangeInstance.getCandles(
                     currencyPair,
                     timeFrame,

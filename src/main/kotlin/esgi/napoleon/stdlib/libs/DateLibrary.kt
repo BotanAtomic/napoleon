@@ -1,15 +1,23 @@
 package esgi.napoleon.stdlib.libs
 
+import esgi.napoleon.stdlib.FunctionName
 import esgi.napoleon.stdlib.Package
 import esgi.napoleon.utils.runOrValueError
 import esgi.napoleon.variables.Variable
-import esgi.napoleon.variables.date.*
+import esgi.napoleon.variables.date.DateTimeVariable
+import esgi.napoleon.variables.date.DateVariable
+import esgi.napoleon.variables.date.DurationVariable
+import esgi.napoleon.variables.date.TimeVariable
 import esgi.napoleon.variables.primitive.BooleanVariable
 import esgi.napoleon.variables.primitive.IntegerVariable
 import esgi.napoleon.variables.primitive.StringVariable
-import java.time.*
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatter.ISO_INSTANT
+import java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME
 
 @Package("date")
 object DateLibrary {
@@ -24,7 +32,8 @@ object DateLibrary {
         return runOrValueError { StringVariable(this.value.format(DateTimeFormatter.ofPattern(format.value))) }
     }
 
-    fun DateTimeVariable.iso() = runOrValueError { StringVariable(this.value.atOffset(ZoneOffset.UTC).format(ISO_INSTANT)) }
+    fun DateTimeVariable.iso() =
+        runOrValueError { StringVariable(this.value.atOffset(ZoneOffset.UTC).format(ISO_INSTANT)) }
 
     fun DateVariable.format(format: StringVariable): Variable<*> {
         return runOrValueError { StringVariable(this.value.format(DateTimeFormatter.ofPattern(format.value))) }
@@ -34,11 +43,11 @@ object DateLibrary {
         return runOrValueError { StringVariable(this.value.format(DateTimeFormatter.ofPattern(format.value))) }
     }
 
-    fun parseDateTime(date: StringVariable, format: StringVariable) = runOrValueError {
+    fun parseDateTime(date: StringVariable, format: StringVariable? = null) = runOrValueError {
         DateTimeVariable(
             LocalDateTime.parse(
                 date.value,
-                DateTimeFormatter.ofPattern(format.value)
+                if (format == null) ISO_LOCAL_DATE_TIME else DateTimeFormatter.ofPattern(format.value)
             )
         )
     }
@@ -122,8 +131,11 @@ object DateLibrary {
 
     fun DateTimeVariable.minusSeconds(seconds: IntegerVariable) =
         runOrValueError { DateTimeVariable(this.value.minusSeconds(seconds.value)) }
-
+    @FunctionName("is_after")
     fun DateTimeVariable.isAfter(date: DateTimeVariable) = BooleanVariable(this.value.isAfter(date.value))
+
+
+    @FunctionName("is_before")
     fun DateTimeVariable.isBefore(date: DateTimeVariable) = BooleanVariable(this.value.isBefore(date.value))
     fun DateTimeVariable.isEqual(date: DateTimeVariable) = BooleanVariable(this.value.isEqual(date.value))
 
