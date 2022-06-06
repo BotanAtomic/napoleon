@@ -4,7 +4,7 @@ plugins {
     `maven-publish`
 }
 
-group = "io.deepn"
+group = "esgi"
 version = "0.0.4"
 
 val javaVersion = JavaVersion.VERSION_17
@@ -13,9 +13,25 @@ java.sourceCompatibility = javaVersion
 repositories {
     mavenCentral()
     maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots") }
+    maven {
+        url = uri("https://dl.bintray.com/http4k/maven")
+    }
 }
 
+val xchangeVersion = "5.0.13"
+
 dependencies {
+    implementation("com.influxdb:influxdb-client-java:6.0.0")
+    implementation("com.influxdb:flux-dsl:6.0.0")
+
+    implementation("org.knowm.xchange:xchange-core:$xchangeVersion")
+    implementation("org.knowm.xchange:xchange-binance:$xchangeVersion")
+    implementation("org.knowm.xchart:xchart:3.8.1")
+
+    implementation(platform("org.http4k:http4k-bom:4.25.16.1"))
+    implementation("org.http4k:http4k-core")
+    implementation("org.http4k:http4k-format-gson")
+
     implementation(kotlin("stdlib-jdk8"))
     implementation(kotlin("reflect"))
 
@@ -24,8 +40,8 @@ dependencies {
     implementation("com.github.kittinunf.fuel:fuel:2.3.1")
     implementation("org.apache.commons:commons-text:1.9")
 
-    antlr("org.antlr:antlr4:4.9.3")
-    implementation("org.antlr:antlr4-runtime:4.9.3")
+    antlr("org.antlr:antlr4:4.10.1")
+    implementation("org.antlr:antlr4-runtime:4.10.1")
 
 
     testImplementation(platform("org.junit:junit-bom:5.7.0"))
@@ -34,7 +50,7 @@ dependencies {
 
 tasks.generateGrammarSource {
     maxHeapSize = "64m"
-    val packageName = "io.deepn.flow.generated"
+    val packageName = "esgi.napoleon.generated"
     arguments = listOf(
         "-Dlanguage=Java",
         "-package", packageName,

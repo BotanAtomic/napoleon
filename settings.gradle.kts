@@ -1,2 +1,2 @@
-rootProject.name = "flow"
+rootProject.name = "Napoleon"
 
