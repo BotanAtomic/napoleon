@@ -24,6 +24,20 @@ import org.knowm.xchart.style.markers.SeriesMarkers
 import java.awt.Color
 import java.util.stream.Collectors
 
+
+val MARKERS = hashMapOf(
+    "CIRCLE" to SeriesMarkers.CIRCLE,
+    "DIAMOND" to SeriesMarkers.DIAMOND,
+    "SQUARE" to SeriesMarkers.SQUARE,
+    "TRIANGLE_DOWN" to SeriesMarkers.TRIANGLE_DOWN,
+    "TRIANGLE_UP" to SeriesMarkers.TRIANGLE_UP,
+    "CROSS" to SeriesMarkers.CROSS,
+    "PLUS" to SeriesMarkers.PLUS,
+    "TRAPEZOID" to SeriesMarkers.TRAPEZOID,
+    "OVAL" to SeriesMarkers.OVAL,
+    "RECTANGLE" to SeriesMarkers.RECTANGLE,
+)
+
 @Package("plt")
 object PlotLibrary {
 
@@ -67,7 +81,13 @@ object PlotLibrary {
     }
 
     @FunctionName("add_xy")
-    fun PlotVariable.addXy(x: ListVariable, y: ListVariable, name: StringVariable): Variable<*> {
+    fun PlotVariable.addXy(
+        x: ListVariable,
+        y: ListVariable,
+        name: StringVariable,
+        marker: StringVariable = StringVariable("cross"),
+        render: StringVariable = StringVariable("line")
+    ): Variable<*> {
         if (x.value.count { it !is NumberVariable } > 0) throw ValueError("x must be a list of numbers")
         if (y.value.count { it !is NumberVariable } > 0) throw ValueError("y must be a list of numbers")
         if (y.value.size != x.value.size) throw ValueError("X and Y-Axis sizes are not the same")
@@ -79,14 +99,23 @@ object PlotLibrary {
             throw ValueError("Series name already exists")
 
         this.value.addSeries(seriesName,
-            x.value.map { (it as NumberVariable).toDouble() }, y.value.map { (it as NumberVariable).toDouble() })
-            .marker = SeriesMarkers.NONE
+            x.value.map { (it as NumberVariable).toDouble() }, y.value.map { (it as NumberVariable).toDouble() }).apply {
+            this.marker = MARKERS[marker.value.uppercase()] ?: SeriesMarkers.NONE
+            xySeriesRenderStyle =
+                XYSeries.XYSeriesRenderStyle.values().find { it.name.lowercase() == render.value.lowercase() }
+                    ?: XYSeries.XYSeriesRenderStyle.Line
+        }
 
         return this
     }
 
     @FunctionName("add_y")
-    fun PlotVariable.addY(y: ListVariable, name: StringVariable, type: StringVariable = StringVariable("default")): Variable<*> {
+    fun PlotVariable.addY(
+        y: ListVariable,
+        name: StringVariable,
+        marker: StringVariable = StringVariable("none"),
+        render: StringVariable = StringVariable("line"),
+    ): Variable<*> {
         if (y.value.count { it !is NumberVariable } > 0) throw ValueError("y must be a list of numbers")
         if (this.value !is XYChart) throw ValueError("ad_y function can only be used on XYChart")
 
@@ -95,13 +124,10 @@ object PlotLibrary {
         if (value.seriesMap.containsKey(seriesName)) throw ValueError("Series name already exists")
 
         this.value.addSeries(seriesName, y.value.map { (it as NumberVariable).toDouble() }).apply {
-            marker = SeriesMarkers.NONE
-
-            if(type.value == "scatter") {
-                marker = SeriesMarkers.CROSS
-                markerColor = Color.RED
-                xySeriesRenderStyle = XYSeries.XYSeriesRenderStyle.Scatter
-            }
+            this.marker = MARKERS[marker.value.uppercase()] ?: SeriesMarkers.NONE
+            xySeriesRenderStyle =
+                XYSeries.XYSeriesRenderStyle.values().find { it.name.lowercase() == render.value.lowercase() }
+                    ?: XYSeries.XYSeriesRenderStyle.Line
         }
 
         return this

@@ -18,7 +18,7 @@ private val cache: MutableMap<String, Variable<*>> = hashMapOf()
 object AiLibrary {
 
 
-    fun sentiment(values: ListVariable): Variable<*> {
+    fun sentiment(values: ListVariable, normalize: BooleanVariable = BooleanVariable(true)): Variable<*> {
         val result = ListVariable()
         values.value.forEach {
             if (cache.containsKey(it.valueToString())) {

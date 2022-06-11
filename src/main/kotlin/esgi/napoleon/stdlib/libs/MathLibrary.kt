@@ -139,18 +139,13 @@ object MathLibrary {
 
         kmeans.cluster(list).forEach {
             toReturn.insert(ObjectVariable(hashMapOf(
-                "center" to ObjectVariable(hashMapOf(
-                    "x" to FloatVariable(it.center.point[0]),
-                    "y" to FloatVariable(it.center.point[1])
-                )),
+                "center" to ListVariable(listOf(FloatVariable(it.center.point[0]), FloatVariable(it.center.point[1]))),
                 "points" to ListVariable(it.points.map { point ->
-                    ObjectVariable(hashMapOf(
-                        "x" to FloatVariable(point.point[0]),
-                        "y" to FloatVariable(point.point[1])
-                    ))
+                    ListVariable(listOf(FloatVariable(point.point[0]), FloatVariable(point.point[1])))
                 })
             )))
         }
+
 
         return toReturn
     }

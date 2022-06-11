@@ -197,6 +197,7 @@ object DateLibrary {
     fun TimeVariable.isAfter(time: TimeVariable) = BooleanVariable(this.value.isAfter(time.value))
     fun TimeVariable.isBefore(time: TimeVariable) = BooleanVariable(this.value.isBefore(time.value))
 
+
     /** Duration **/
 
     fun DurationVariable.isZero() = BooleanVariable(this.value.isZero)
