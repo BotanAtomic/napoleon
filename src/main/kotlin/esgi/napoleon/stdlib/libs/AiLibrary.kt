@@ -7,8 +7,10 @@ import esgi.napoleon.stdlib.libs.HttpLibrary.params
 import esgi.napoleon.stdlib.libs.JsonLibrary.init
 import esgi.napoleon.stdlib.libs.JsonLibrary.keys
 import esgi.napoleon.stdlib.libs.ListLibrary.append
+import esgi.napoleon.stdlib.libs.ListLibrary.average
 import esgi.napoleon.variables.Variable
 import esgi.napoleon.variables.primitive.*
+import esgi.napoleon.variables.primitive.api.NumberVariable
 
 private val AI_API = System.getenv().getOrDefault("AI_API", "http://localhost:5000")
 
@@ -30,7 +32,24 @@ object AiLibrary {
                 cache[it.valueToString()] = value;
             }
         }
-        return result
+
+        if (!normalize.value)
+            return result
+
+        val newResult = ListVariable()
+        result.value.map {
+            return@map if (it is ObjectVariable) {
+                val score = it["score"] as FloatVariable
+                val label = it["label"] as StringVariable
+
+                 if (label.value == "NEGATIVE") score.multiply(IntegerVariable(-1))
+                else score
+
+            } else it
+        }.filter { it is NumberVariable }.forEach { newResult.insert(it) }
+
+
+        return newResult
     }
 
     fun emotion(values: ListVariable, merge: BooleanVariable = BooleanVariable(false)): Variable<*> {

@@ -30,7 +30,7 @@ object InfluxDatabase {
     )
 
     fun getCandles(exchange: String, symbol: String, timeFrame: TimeFrame, startTime: Instant, endTime: Instant): List<Candle> =
-        client.queryApi.query(
+        kotlin.runCatching { client.queryApi.query(
             Flux.from(bucketName)
                 .rangeInclusive(startTime, endTime)
                 .filter(
@@ -44,10 +44,10 @@ object InfluxDatabase {
                 .withColumnKey(listOf("_field"))
                 .withValueColumn("_value").toString(),
             Candle::class.java
-        )
+        ) }.getOrElse { listOf() }
 
     fun insert(exchange: String, symbol: String, timeFrame: TimeFrame, candles: List<Candle>) =
-        client.writeApiBlocking.writePoints(candles.toPoint(exchange, symbol, timeFrame.name))
+        kotlin.runCatching { client.writeApiBlocking.writePoints(candles.toPoint(exchange, symbol, timeFrame.name)) }
 
     private fun List<Candle>.toPoint(exchange: String, symbol: String, timeFrame: String) = map { candle ->
         Point(exchange).addTags(mapOf(TAG_SYMBOL to symbol, TAG_TIMEFRAME to timeFrame))

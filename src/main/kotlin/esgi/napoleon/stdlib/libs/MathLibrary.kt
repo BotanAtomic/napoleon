@@ -146,7 +146,6 @@ object MathLibrary {
             )))
         }
 
-
         return toReturn
     }
 }
