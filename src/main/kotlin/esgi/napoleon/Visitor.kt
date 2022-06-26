@@ -139,10 +139,10 @@ class Visitor(
 
     override fun visitWhileLoop(context: NapoleonParser.WhileLoopContext): Void {
         enterLoop {
-            while (visit(context.expression()).toBoolean().value) {
-                visitBlock(context.block())
+            while (visit(context.expression()).toBoolean().value) { // 1) on boucle tant que l'expression n°1 est à true
+                visitBlock(context.block()) // 2) on execute le block
 
-                if (status == Status.BREAK)
+                if (status == Status.BREAK) // 3) si on a break, on sort de la boucle
                     break
             }
         }
