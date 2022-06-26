@@ -106,3 +106,7 @@ publishing {
     }
 }
 
+application {
+    mainClass.set("esgi.napoleon.ServerKt")
+}
+
