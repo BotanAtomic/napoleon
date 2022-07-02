@@ -65,4 +65,5 @@ fun main() {
 
 
     val server = ServerFilters.Cors(CorsPolicy.UnsafeGlobalPermissive).then(app).asServer(SunHttp(port.toInt())).start()
+    println("Server started on port $port")
 }
