@@ -110,3 +110,7 @@ application {
     mainClass.set("esgi.napoleon.ServerKt")
 }
 
+tasks.create("stage") {
+    dependsOn(tasks.build, tasks.clean)
+    mustRunAfter(tasks.clean)
+}
