@@ -22,6 +22,9 @@ data class Session(val uuid: String)
 
 data class ExecutionRequest(val session: String, val code: String)
 
+
+val port = System.getenv("PORT") ?: "9000"
+
 fun main() {
 
     val environments: MutableMap<String, ExecutionEnvironment> = ConcurrentHashMap()
@@ -61,5 +64,5 @@ fun main() {
     )
 
 
-    val server = ServerFilters.Cors(CorsPolicy.UnsafeGlobalPermissive).then(app).asServer(SunHttp(9000)).start()
+    val server = ServerFilters.Cors(CorsPolicy.UnsafeGlobalPermissive).then(app).asServer(SunHttp(port.toInt())).start()
 }
